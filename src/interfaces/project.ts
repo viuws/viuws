@@ -8,9 +8,7 @@
 export interface Project {
   schemaVersion?: "0.1";
   name: string;
-  workflows?: {
-    [k: string]: Workflow;
-  };
+  workflows?: Workflow[];
   environments?: {
     [k: string]: Environment;
   };

@@ -1,16 +1,16 @@
-interface ProjectMenuProps {
-  projectName: string;
-  onProjectNameChange: (projectName: string) => void;
-}
+import useProjectStore from "../stores/projectStore";
 
-function ProjectNavbar(props: ProjectMenuProps) {
+function ProjectNavbar() {
+  const projectName = useProjectStore((state) => state.name);
+  const setProjectName = useProjectStore((state) => state.setName);
+
   return (
     <div className="navbar space-x-2">
       <div className="navbar-start">
         <input
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
           className="input input-ghost font-bold"
-          value={props.projectName}
-          onChange={(e) => props.onProjectNameChange(e.target.value)}
         />
       </div>
       <div className="navbar-center"></div>

@@ -7,20 +7,20 @@ import ProjectNavbar from "./components/ProjectNavbar";
 import "./App.css";
 
 function App() {
-  const nodes = useRFStore((state) => state.nodes);
-  const edges = useRFStore((state) => state.edges);
-  const onNodesChange = useRFStore((state) => state.onNodesChange);
-  const onEdgesChange = useRFStore((state) => state.onEdgesChange);
-  const onConnect = useRFStore((state) => state.onConnect);
+  const rfNodes = useRFStore((state) => state.nodes);
+  const rfEdges = useRFStore((state) => state.edges);
+  const onRFNodesChange = useRFStore((state) => state.onNodesChange);
+  const onRFEdgesChange = useRFStore((state) => state.onEdgesChange);
+  const onRFConnect = useRFStore((state) => state.onConnect);
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        nodes={rfNodes}
+        edges={rfEdges}
+        onNodesChange={onRFNodesChange}
+        onEdgesChange={onRFEdgesChange}
+        onConnect={onRFConnect}
       >
         <Background />
         <MiniMap position="top-right" pannable zoomable />

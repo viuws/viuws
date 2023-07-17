@@ -5,21 +5,15 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface Project {
-  schemaVersion?: "0.1";
-  name: string;
-  workflows?: Workflow[];
-  environments?: {
-    [k: string]: Environment;
-  };
-  [k: string]: unknown;
-}
 export interface Workflow {
+  schemaVersion?: "0.1";
   name: string;
   processes?: {
     [k: string]: ProcessConfig;
   };
-  environment: string;
+  environments?: {
+    [k: string]: Environment;
+  };
   [k: string]: unknown;
 }
 export interface ProcessConfig {
@@ -36,7 +30,7 @@ export interface ProcessConfig {
     [k: string]: unknown;
   };
   args?: string[];
-  executor: string;
+  environment?: string | null;
   [k: string]: unknown;
 }
 export interface Environment {
@@ -45,14 +39,5 @@ export interface Environment {
   dataMappings?: {
     [k: string]: string;
   };
-  executors?: {
-    [k: string]: Executor;
-  };
-  [k: string]: unknown;
-}
-export interface Executor {
-  name: string;
-  type: string;
-  config?: string;
   [k: string]: unknown;
 }

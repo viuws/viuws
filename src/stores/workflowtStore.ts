@@ -1,13 +1,13 @@
 import { create } from "zustand";
 
-type ProjectStore = {
+type WorkflowStore = {
   name: string;
   setName: (newName: string) => void;
 };
 
-const useProjectStore = create<ProjectStore>((set) => ({
-  name: "New project",
+const useWorkflowStore = create<WorkflowStore>((set) => ({
+  name: "New workflow",
   setName: (newName: string) => set({ name: newName }),
 }));
 
-export default useProjectStore;
+export default useWorkflowStore;

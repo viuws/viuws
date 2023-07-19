@@ -16,8 +16,8 @@ import {
 type RFStore = {
   nodes: Node[];
   edges: Edge[];
-  setNodes: (newNodes: Node[]) => void;
-  setEdges: (newEdges: Edge[]) => void;
+  setNodes: (value: Node[]) => void;
+  setEdges: (value: Edge[]) => void;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
@@ -26,8 +26,8 @@ type RFStore = {
 const useRFStore = create<RFStore>((set, get) => ({
   nodes: [],
   edges: [],
-  setNodes: (newNodes: Node[]) => set({ nodes: newNodes }),
-  setEdges: (newEdges: Edge[]) => set({ edges: newEdges }),
+  setNodes: (value: Node[]) => set({ nodes: value }),
+  setEdges: (value: Edge[]) => set({ edges: value }),
   onNodesChange: (changes: NodeChange[]) =>
     set({ nodes: applyNodeChanges(changes, get().nodes) }),
   onEdgesChange: (changes: EdgeChange[]) =>

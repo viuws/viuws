@@ -2,12 +2,12 @@ import { create } from "zustand";
 
 type WorkflowStore = {
   name: string;
-  setName: (newName: string) => void;
+  setName: (value: string) => void;
 };
 
 const useWorkflowStore = create<WorkflowStore>((set) => ({
   name: "New workflow",
-  setName: (newName: string) => set({ name: newName }),
+  setName: (value: string) => set({ name: value }),
 }));
 
 export default useWorkflowStore;

@@ -22,7 +22,6 @@ export interface Process {
   envUISchema?: string | null;
   argsJSONSchema?: string | null;
   argsUISchema?: string | null;
-  [k: string]: unknown;
 }
 export interface OCIRuntimeConfig {
   image: string;

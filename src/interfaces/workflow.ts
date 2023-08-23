@@ -14,7 +14,6 @@ export interface Workflow {
   environments?: {
     [k: string]: Environment;
   };
-  [k: string]: unknown;
 }
 export interface ProcessConfig {
   repository?: string | null;

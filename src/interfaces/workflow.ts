@@ -6,7 +6,7 @@
  */
 
 export interface Workflow {
-  schemaVersion?: "0.1";
+  schemaVersion?: string;
   name: string;
   processes?: {
     [k: string]: ProcessConfig;
@@ -31,7 +31,6 @@ export interface ProcessConfig {
   };
   args?: string[];
   environment?: string | null;
-  [k: string]: unknown;
 }
 export interface Environment {
   name: string;
@@ -39,5 +38,4 @@ export interface Environment {
   dataMappings?: {
     [k: string]: string;
   };
-  [k: string]: unknown;
 }

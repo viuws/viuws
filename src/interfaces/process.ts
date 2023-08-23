@@ -8,7 +8,7 @@
 export type Cardinality = "single" | "multiple";
 
 export interface Process {
-  schemaVersion?: "0.1";
+  schemaVersion?: string;
   name: string;
   description: string;
   container: OCIRuntimeConfig;
@@ -32,7 +32,6 @@ export interface OCIRuntimeConfig {
     [k: string]: unknown;
   };
   args: string[];
-  [k: string]: unknown;
 }
 export interface InputChannel {
   name: string;
@@ -40,12 +39,10 @@ export interface InputChannel {
   cardinality?: Cardinality & string;
   required?: boolean;
   supportedFilePatterns?: string[] | null;
-  [k: string]: unknown;
 }
 export interface OutputChannel {
   name: string;
   description: string;
   cardinality?: Cardinality & string;
   generatedFilePattern?: string | null;
-  [k: string]: unknown;
 }

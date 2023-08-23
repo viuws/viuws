@@ -6,7 +6,7 @@ import { faBars } from "@fortawesome/free-solid-svg-icons";
 
 import useAppStore, { Sidebar } from "./stores/appStore";
 import useRFStore from "./stores/rfStore";
-import useWorkflowStore from "./stores/workflowtStore";
+import useWorkflowStore from "./stores/workflowStore";
 
 import "./App.css";
 

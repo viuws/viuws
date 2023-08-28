@@ -1,14 +1,14 @@
 import ReactFlow, { Background, Controls, MiniMap, Panel } from "reactflow";
 import "reactflow/dist/style.css";
 
-import useReactFlowStore from "./stores/ReactFlowStore";
+import Split from "react-split";
 
 import "./App.css";
-import Navbar from "./components/Navbar";
-import Toolbar from "./components/Toolbar";
 
-import Split from "react-split";
+import Navbar from "./components/Navbar";
 import ProcessPanel from "./components/ProcessPanel";
+
+import useReactFlowStore from "./stores/ReactFlowStore";
 
 function App() {
   const reactFlowNodes = useReactFlowStore((state) => state.nodes);
@@ -26,6 +26,7 @@ function App() {
       className="split-flex"
       style={{ width: "100vw", height: "100vh" }}
       sizes={[80, 20]}
+      minSize={0}
     >
       <div id="reactFlowContainer">
         <ReactFlow
@@ -40,9 +41,6 @@ function App() {
           <Controls position="bottom-right" />
           <Panel position="top-left">
             <Navbar />
-          </Panel>
-          <Panel position="bottom-left">
-            <Toolbar />
           </Panel>
         </ReactFlow>
       </div>

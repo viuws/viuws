@@ -1,9 +1,9 @@
 import { create } from "zustand";
+import { Workflow } from "../interfaces/Workflow";
 
-type WorkflowStore = {
-  name: string;
+interface WorkflowStore extends Workflow {
   setName: (value: string) => void;
-};
+}
 
 const useWorkflowStore = create<WorkflowStore>((set) => ({
   name: "New workflow",

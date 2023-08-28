@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 for file in "$@"; do
-    npx json2ts "$file" "src/interfaces/$(basename $file .json).ts"
+    stem=$(basename "$file" .json)
+    npx json2ts "$file" "src/interfaces/${stem^}.ts"
 done

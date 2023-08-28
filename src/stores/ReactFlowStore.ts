@@ -13,7 +13,7 @@ import {
   applyEdgeChanges,
 } from "reactflow";
 
-type RFStore = {
+interface ReactFlowStore {
   nodes: Node[];
   edges: Edge[];
   setNodes: (value: Node[]) => void;
@@ -21,9 +21,9 @@ type RFStore = {
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
-};
+}
 
-const useRFStore = create<RFStore>((set, get) => ({
+const useReactFlowStore = create<ReactFlowStore>((set, get) => ({
   nodes: [],
   edges: [],
   setNodes: (value: Node[]) => set({ nodes: value }),
@@ -36,4 +36,4 @@ const useRFStore = create<RFStore>((set, get) => ({
     set({ edges: addEdge(connection, get().edges) }),
 }));
 
-export default useRFStore;
+export default useReactFlowStore;

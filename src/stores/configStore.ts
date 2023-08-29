@@ -5,12 +5,14 @@ export interface Config {
 }
 
 interface ConfigStore extends Config {
+  loaded: boolean;
   load: (config: Config) => void;
 }
 
 const useConfigStore = create<ConfigStore>()((set) => ({
   registries: [],
-  load: (config: Config) => set(config),
+  loaded: false,
+  load: (config: Config) => set({ ...config, loaded: true }),
 }));
 
 export default useConfigStore;

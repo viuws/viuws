@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Workflow } from "../interfaces/Workflow";
+import { Workflow } from "../interfaces/workflow";
 
 interface WorkflowStore extends Workflow {
   setName: (name: string) => void;

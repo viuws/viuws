@@ -8,7 +8,7 @@ import "reactflow/dist/style.css";
 import Navbar from "../components/Navbar";
 import ProcessPanel from "../components/ProcessPanel";
 
-import useReactFlowStore from "../stores/reactFlowStore";
+import useReactFlowStore from "../stores/reactFlow";
 
 function Home() {
   const nodes = useReactFlowStore((state) => state.nodes);

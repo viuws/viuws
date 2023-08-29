@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 
-import useWorkflowStore from "../stores/workflowStore";
+import useWorkflowStore from "../stores/workflow";
 
 function Navbar() {
   const workflowName = useWorkflowStore((state) => state.name);

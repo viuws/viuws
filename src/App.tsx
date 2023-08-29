@@ -7,8 +7,8 @@ import Home from "./pages/Home";
 import { Registry } from "./interfaces/registry";
 import { Process } from "./interfaces/process";
 
-import useAppStore from "./stores/appStore";
-import useConfigStore, { ConfigState } from "./stores/configStore";
+import useAppStore from "./stores/app";
+import useConfigStore, { ConfigState } from "./stores/config";
 
 import { fetchYaml } from "./utils/fetchYaml";
 

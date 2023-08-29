@@ -41,7 +41,7 @@ function App() {
   useEffect(() => {
     let ignore = false;
 
-    function loadProcesses() {
+    function loadRegistries() {
       for (const repositoryUrl of registries) {
         const baseUrl = repositoryUrl + "/.viuws";
         const registryUrl = baseUrl + "/registry.yaml";
@@ -61,7 +61,7 @@ function App() {
     }
 
     if (appLoaded) {
-      loadProcesses();
+      loadRegistries();
     }
 
     return () => {

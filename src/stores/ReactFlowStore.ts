@@ -16,18 +16,18 @@ import {
 interface ReactFlowStore {
   nodes: Node[];
   edges: Edge[];
-  setNodes: (value: Node[]) => void;
-  setEdges: (value: Edge[]) => void;
+  setNodes: (nodes: Node[]) => void;
+  setEdges: (edges: Edge[]) => void;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
 }
 
-const useReactFlowStore = create<ReactFlowStore>((set, get) => ({
+const useReactFlowStore = create<ReactFlowStore>()((set, get) => ({
   nodes: [],
   edges: [],
-  setNodes: (value: Node[]) => set({ nodes: value }),
-  setEdges: (value: Edge[]) => set({ edges: value }),
+  setNodes: (nodes: Node[]) => set({ nodes: nodes }),
+  setEdges: (edges: Edge[]) => set({ edges: edges }),
   onNodesChange: (changes: NodeChange[]) =>
     set({ nodes: applyNodeChanges(changes, get().nodes) }),
   onEdgesChange: (changes: EdgeChange[]) =>

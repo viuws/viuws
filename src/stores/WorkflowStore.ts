@@ -2,12 +2,12 @@ import { create } from "zustand";
 import { Workflow } from "../interfaces/Workflow";
 
 interface WorkflowStore extends Workflow {
-  setName: (value: string) => void;
+  setName: (name: string) => void;
 }
 
-const useWorkflowStore = create<WorkflowStore>((set) => ({
+const useWorkflowStore = create<WorkflowStore>()((set) => ({
   name: "New workflow",
-  setName: (value: string) => set({ name: value }),
+  setName: (name: string) => set({ name: name }),
 }));
 
 export default useWorkflowStore;

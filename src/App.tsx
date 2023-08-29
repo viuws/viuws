@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import ReactFlow, { Background, Controls, MiniMap, Panel } from "reactflow";
 import "reactflow/dist/style.css";
 
@@ -8,18 +10,38 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import ProcessPanel from "./components/ProcessPanel";
 
+import useConfigStore, { Config } from "./stores/ConfigStore";
 import useReactFlowStore from "./stores/ReactFlowStore";
 
+const CONFIG_FILE_ENVVAR = "VIUWS_CONFIG";
+const DEFAULT_CONFIG_FILE = "config.json";
+
 function App() {
-  const reactFlowNodes = useReactFlowStore((state) => state.nodes);
-  const reactFlowEdges = useReactFlowStore((state) => state.edges);
-  const onReactFlowNodesChange = useReactFlowStore(
-    (state) => state.onNodesChange,
-  );
-  const onReactFlowEdgesChange = useReactFlowStore(
-    (state) => state.onEdgesChange,
-  );
-  const onReactFlowConnect = useReactFlowStore((state) => state.onConnect);
+  const loadConfig = useConfigStore((state) => state.load);
+
+  useEffect(() => {
+    async function fetchConfig() {
+      const configFile = process.env[CONFIG_FILE_ENVVAR] || DEFAULT_CONFIG_FILE;
+      const response = await fetch(configFile);
+      if (response.ok) {
+        const configData = (await response.json()) as Config;
+        if (!ignore) {
+          loadConfig(configData);
+        }
+      }
+    }
+    let ignore = false;
+    void fetchConfig();
+    return () => {
+      ignore = true;
+    };
+  });
+
+  const nodes = useReactFlowStore((state) => state.nodes);
+  const edges = useReactFlowStore((state) => state.edges);
+  const onNodesChange = useReactFlowStore((state) => state.onNodesChange);
+  const onEdgesChange = useReactFlowStore((state) => state.onEdgesChange);
+  const onConnect = useReactFlowStore((state) => state.onConnect);
 
   return (
     <Split
@@ -30,11 +52,11 @@ function App() {
     >
       <div id="reactFlowContainer">
         <ReactFlow
-          nodes={reactFlowNodes}
-          edges={reactFlowEdges}
-          onNodesChange={onReactFlowNodesChange}
-          onEdgesChange={onReactFlowEdgesChange}
-          onConnect={onReactFlowConnect}
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
         >
           <Background />
           <MiniMap position="top-right" pannable zoomable />

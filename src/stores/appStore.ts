@@ -2,13 +2,24 @@ import { create } from "zustand";
 
 import { Process } from "../interfaces/process";
 
-interface AppStore {
+export type AppState = {
+  loaded: boolean;
   processes: Process[];
-  registerProcess: (process: Process) => void;
-}
+};
 
-const useAppStore = create<AppStore>()((set) => ({
+type AppActions = {
+  setLoaded: (loaded: boolean) => void;
+  registerProcess: (process: Process) => void;
+};
+
+const defaultAppState: AppState = {
+  loaded: false,
   processes: [],
+};
+
+const useAppStore = create<AppState & AppActions>()((set) => ({
+  ...defaultAppState,
+  setLoaded: (loaded) => set({ loaded: loaded }),
   registerProcess: (process) =>
     set((state) => ({ processes: [...state.processes, process] })),
 }));

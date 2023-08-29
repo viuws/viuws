@@ -1,18 +1,21 @@
 import { create } from "zustand";
 
-export interface Config {
+export type ConfigState = {
   registries: string[];
-}
+};
 
-interface ConfigStore extends Config {
-  loaded: boolean;
-  load: (config: Config) => void;
-}
+type ConfigActions = {
+  load: (configState: ConfigState) => void;
+};
 
-const useConfigStore = create<ConfigStore>()((set) => ({
+const defaultConfigState: ConfigState = {
   registries: [],
-  loaded: false,
-  load: (config: Config) => set({ ...config, loaded: true }),
+};
+
+const useConfigStore = create<ConfigState & ConfigActions>()((set) => ({
+  ...defaultConfigState,
+  load: (configState: ConfigState) =>
+    set({ ...defaultConfigState, ...configState }),
 }));
 
 export default useConfigStore;

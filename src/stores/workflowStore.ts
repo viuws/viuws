@@ -1,12 +1,18 @@
 import { create } from "zustand";
-import { Workflow } from "../interfaces/workflow";
+import { Workflow as WorkflowState } from "../interfaces/workflow";
 
-interface WorkflowStore extends Workflow {
+export type { WorkflowState };
+
+type WorkflowActions = {
   setName: (name: string) => void;
-}
+};
 
-const useWorkflowStore = create<WorkflowStore>()((set) => ({
+const defaultWorkflowState: WorkflowState = {
   name: "New workflow",
+};
+
+const useWorkflowStore = create<WorkflowState & WorkflowActions>()((set) => ({
+  ...defaultWorkflowState,
   setName: (name: string) => set({ name: name }),
 }));
 

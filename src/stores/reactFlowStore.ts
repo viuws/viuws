@@ -13,27 +13,36 @@ import {
   applyEdgeChanges,
 } from "reactflow";
 
-interface ReactFlowStore {
+export type ReactFlowState = {
   nodes: Node[];
   edges: Edge[];
+};
+
+type ReactFlowActions = {
   setNodes: (nodes: Node[]) => void;
   setEdges: (edges: Edge[]) => void;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
-}
+};
 
-const useReactFlowStore = create<ReactFlowStore>()((set, get) => ({
+const defaultReactFlowState: ReactFlowState = {
   nodes: [],
   edges: [],
-  setNodes: (nodes: Node[]) => set({ nodes: nodes }),
-  setEdges: (edges: Edge[]) => set({ edges: edges }),
-  onNodesChange: (changes: NodeChange[]) =>
-    set({ nodes: applyNodeChanges(changes, get().nodes) }),
-  onEdgesChange: (changes: EdgeChange[]) =>
-    set({ edges: applyEdgeChanges(changes, get().edges) }),
-  onConnect: (connection: Connection) =>
-    set({ edges: addEdge(connection, get().edges) }),
-}));
+};
+
+const useReactFlowStore = create<ReactFlowState & ReactFlowActions>()(
+  (set, get) => ({
+    ...defaultReactFlowState,
+    setNodes: (nodes: Node[]) => set({ nodes: nodes }),
+    setEdges: (edges: Edge[]) => set({ edges: edges }),
+    onNodesChange: (changes: NodeChange[]) =>
+      set({ nodes: applyNodeChanges(changes, get().nodes) }),
+    onEdgesChange: (changes: EdgeChange[]) =>
+      set({ edges: applyEdgeChanges(changes, get().edges) }),
+    onConnect: (connection: Connection) =>
+      set({ edges: addEdge(connection, get().edges) }),
+  }),
+);
 
 export default useReactFlowStore;

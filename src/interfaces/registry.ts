@@ -7,7 +7,9 @@
 
 export interface Registry {
   schemaVersion?: string;
-  processes?: {
-    [k: string]: string;
-  };
+  processes?: ProcessRef[];
+}
+export interface ProcessRef {
+  id: string;
+  path: string;
 }

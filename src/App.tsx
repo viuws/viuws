@@ -42,23 +42,21 @@ function App() {
     let ignore = false;
 
     function loadProcesses() {
-      for (const baseUrl of registries) {
-        fetchYaml<Registry>(baseUrl + "/.viuws-registry.yaml").then(
-          (registry) => {
-            if (registry.processes) {
-              for (const processId in registry.processes) {
-                const processPath = registry.processes[processId];
-                const processUrl = baseUrl + "/" + processPath;
-                fetchYaml<Process>(processUrl).then((process) => {
-                  if (!ignore) {
-                    registerProcess(process);
-                  }
-                }, console.error);
-              }
+      for (const repositoryUrl of registries) {
+        const baseUrl = repositoryUrl + "/.viuws";
+        const registryUrl = baseUrl + "/registry.yaml";
+        fetchYaml<Registry>(registryUrl).then((registry) => {
+          if (registry.processes) {
+            for (const processRef of registry.processes) {
+              const processUrl = baseUrl + "/" + processRef.path;
+              fetchYaml<Process>(processUrl).then((process) => {
+                if (!ignore) {
+                  registerProcess(process);
+                }
+              }, console.error);
             }
-          },
-          console.error,
-        );
+          }
+        }, console.error);
       }
     }
 

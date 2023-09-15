@@ -9,13 +9,19 @@ import Navbar from "../components/Navbar";
 import ProcessPanel from "../components/ProcessPanel";
 
 import useReactFlowStore from "../stores/reactFlow";
+import useAppStore from "../stores/app";
 
 function Home() {
-  const nodes = useReactFlowStore((state) => state.nodes);
-  const edges = useReactFlowStore((state) => state.edges);
-  const onNodesChange = useReactFlowStore((state) => state.onNodesChange);
-  const onEdgesChange = useReactFlowStore((state) => state.onEdgesChange);
-  const onConnect = useReactFlowStore((state) => state.onConnect);
+  const appStatus = useAppStore((state) => state.status);
+  const reactFlowNodes = useReactFlowStore((state) => state.nodes);
+  const reactFlowEdges = useReactFlowStore((state) => state.edges);
+  const onReactFlowNodesChange = useReactFlowStore(
+    (state) => state.onNodesChange,
+  );
+  const onReactFlowEdgesChange = useReactFlowStore(
+    (state) => state.onEdgesChange,
+  );
+  const onReactFlowConnect = useReactFlowStore((state) => state.onConnect);
   return (
     <Split
       className="split-flex"
@@ -25,17 +31,20 @@ function Home() {
     >
       <div id="reactFlowContainer">
         <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
+          nodes={reactFlowNodes}
+          edges={reactFlowEdges}
+          onNodesChange={onReactFlowNodesChange}
+          onEdgesChange={onReactFlowEdgesChange}
+          onConnect={onReactFlowConnect}
         >
           <Background />
           <MiniMap position="top-right" pannable zoomable />
           <Controls position="bottom-right" />
           <Panel position="top-left">
             <Navbar />
+          </Panel>
+          <Panel position="bottom-left">
+            <p>{appStatus}</p>
           </Panel>
         </ReactFlow>
       </div>

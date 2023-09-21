@@ -1,31 +1,27 @@
 import { create } from "zustand";
 
-import { Process } from "../interfaces/process";
+import { Module } from "../interfaces/module";
 
 export type AppState = {
-  status: string;
-  loaded: boolean;
-  processes: Process[];
+    loaded: boolean;
+    modules: Module[];
 };
 
 type AppActions = {
-  setStatus: (status: string) => void;
-  setLoaded: (loaded: boolean) => void;
-  registerProcess: (process: Process) => void;
+    setLoaded: (loaded: boolean) => void;
+    registerModule: (module: Module) => void;
 };
 
 const defaultAppState: AppState = {
-  status: "",
-  loaded: false,
-  processes: [],
+    loaded: false,
+    modules: [],
 };
 
 const useAppStore = create<AppState & AppActions>()((set) => ({
-  ...defaultAppState,
-  setStatus: (status) => set({ status: status }),
-  setLoaded: (loaded) => set({ loaded: loaded }),
-  registerProcess: (process) =>
-    set((state) => ({ processes: [...state.processes, process] })),
+    ...defaultAppState,
+    setLoaded: (loaded) => set({ loaded: loaded }),
+    registerModule: (module) =>
+        set((state) => ({ modules: [...state.modules, module] })),
 }));
 
 export default useAppStore;

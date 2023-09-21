@@ -1,52 +1,53 @@
 {
-  "name": "viuws-editor",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "prepare": "husky install",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "format": "prettier . --write",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.4.2",
-    "@fortawesome/free-solid-svg-icons": "^6.4.2",
-    "@fortawesome/react-fontawesome": "^0.2.0",
-    "js-yaml": "^4.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-split": "^2.0.14",
-    "reactflow": "^11.8.3",
-    "zustand": "^4.4.1"
-  },
-  "devDependencies": {
-    "@types/js-yaml": "^4.0.5",
-    "@types/node": "^20.5.7",
-    "@types/react": "^18.2.21",
-    "@types/react-dom": "^18.2.7",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "@vitejs/plugin-react": "^4.0.4",
-    "autoprefixer": "^10.4.15",
-    "daisyui": "^3.6.3",
-    "eslint": "^8.48.0",
-    "eslint-config-prettier": "^8.10.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.3",
-    "husky": "^8.0.3",
-    "json-schema-to-typescript": "^13.1.1",
-    "lint-staged": "^13.3.0",
-    "postcss": "^8.4.29",
-    "prettier": "^3.0.3",
-    "tailwindcss": "^3.3.3",
-    "typescript": "^5.2.2",
-    "vite": "^4.4.9"
-  },
-  "lint-staged": {
-    "src/*.{js,jsx,ts,tsx}": "eslint --report-unused-disable-directives --max-warnings 0 --cache --fix",
-    "*.{js,jsx,ts,tsx,html,css,json,md,yml,yaml}": "prettier --write"
-  }
+    "name": "viuws-editor",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "prepare": "husky install",
+        "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+        "format": "prettier . --write",
+        "build": "tsc && vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@fortawesome/fontawesome-svg-core": "^6.4.2",
+        "@fortawesome/free-solid-svg-icons": "^6.4.2",
+        "@fortawesome/react-fontawesome": "^0.2.0",
+        "js-yaml": "^4.1.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-split": "^2.0.14",
+        "reactflow": "^11.8.3",
+        "zustand": "^4.4.1"
+    },
+    "devDependencies": {
+        "@trivago/prettier-plugin-sort-imports": "^4.2.0",
+        "@types/js-yaml": "^4.0.6",
+        "@types/node": "^20.6.3",
+        "@types/react": "^18.2.22",
+        "@types/react-dom": "^18.2.7",
+        "@typescript-eslint/eslint-plugin": "^5.62.0",
+        "@typescript-eslint/parser": "^5.62.0",
+        "@vitejs/plugin-react": "^4.0.4",
+        "autoprefixer": "^10.4.16",
+        "daisyui": "^3.7.7",
+        "eslint": "^8.49.0",
+        "eslint-config-prettier": "^8.10.0",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "eslint-plugin-react-refresh": "^0.4.3",
+        "husky": "^8.0.3",
+        "json-schema-to-typescript": "^13.1.1",
+        "lint-staged": "^13.3.0",
+        "postcss": "^8.4.30",
+        "prettier": "^3.0.3",
+        "tailwindcss": "^3.3.3",
+        "typescript": "^5.2.2",
+        "vite": "^4.4.9"
+    },
+    "lint-staged": {
+        "src/*.{js,jsx,ts,tsx}": "eslint --report-unused-disable-directives --max-warnings 0 --cache --fix",
+        "*.{js,jsx,ts,tsx,html,css,json,md,yml,yaml}": "prettier --write"
+    }
 }

@@ -1,0 +1,4 @@
+modules: []
+plugins: []
+repos:
+    - https://cdn.jsdelivr.net/gh/viuws/viuws-registry

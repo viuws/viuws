@@ -1,97 +1,118 @@
-import "./App.css";
-
 import { useEffect } from "react";
 
-import Home from "./pages/Home";
-
+import "./App.css";
+import { Module } from "./interfaces/module";
 import { Registry } from "./interfaces/registry";
-import { Process } from "./interfaces/process";
-
+import Home from "./pages/Home";
 import useAppStore from "./stores/app";
 import useConfigStore, { ConfigState } from "./stores/config";
-
-import { fetchYaml } from "./utils/fetchYaml";
+import fetchYaml from "./utils/fetchYaml";
 
 function App() {
-  const appStatus = useAppStore((state) => state.status);
-  const appLoaded = useAppStore((state) => state.loaded);
-  const setAppStatus = useAppStore((state) => state.setStatus);
-  const setAppLoaded = useAppStore((state) => state.setLoaded);
-  const registerProcess = useAppStore((state) => state.registerProcess);
+    const loaded = useAppStore((state) => state.loaded);
+    const loadConfig = useConfigStore((state) => state.load);
+    const setLoaded = useAppStore((state) => state.setLoaded);
+    const repoUrls = useConfigStore((state) => state.repos);
+    const registerModule = useAppStore((state) => state.registerModule);
 
-  const registries = useConfigStore((state) => state.registries);
-  const loadConfig = useConfigStore((state) => state.load);
+    useEffect(() => {
+        let ignore = false;
 
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadApp() {
-      if (!ignore) {
-        setAppStatus("Loading config...");
-        const configState = await fetchYaml<ConfigState>("config.yaml");
-        if (!ignore) {
-          loadConfig(configState);
-          setAppStatus("Config loaded.");
-          setAppLoaded(true);
+        function loadApp() {
+            fetchYaml<ConfigState>("config.yaml").then((configState) => {
+                if (!ignore) {
+                    loadConfig(configState);
+                }
+                setLoaded(true);
+            }, console.error);
         }
-      }
-    }
 
-    loadApp().catch(console.error);
+        loadApp();
 
-    return () => {
-      ignore = true;
-    };
-  }, [loadConfig, setAppStatus, setAppLoaded]);
+        return () => {
+            ignore = true;
+        };
+    }, [loadConfig, setLoaded]);
 
-  useEffect(() => {
-    let ignore = false;
+    useEffect(() => {
+        let ignore = false;
 
-    function loadRegistries() {
-      if (!ignore) {
-        setAppStatus("Loading registries...");
-        for (const repositoryUrl of registries) {
-          const baseUrl = repositoryUrl + "/.viuws";
-          const registryUrl = baseUrl + "/registry.yaml";
-          fetchYaml<Registry>(registryUrl).then((registry) => {
-            if (registry.processes) {
-              for (const processRef of registry.processes) {
-                const processUrl = baseUrl + "/" + processRef.path;
-                fetchYaml<Process>(processUrl).then((process) => {
-                  if (!ignore) {
-                    registerProcess(process);
-                  }
+        function loadModules(moduleUrls: string[]) {
+            for (const moduleUrl of moduleUrls) {
+                fetchYaml<Module>(moduleUrl).then((module) => {
+                    if (!ignore) {
+                        try {
+                            registerModule(module);
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    }
                 }, console.error);
-              }
             }
-          }, console.error);
         }
-        if (!ignore) {
-          setAppStatus("Registries loaded.");
+
+        function loadPlugins(pluginUrls: string[]) {
+            for (const pluginUrl of pluginUrls) {
+                import(/* @vite-ignore */ pluginUrl).then(
+                    ({ default: plugin }) => {
+                        if (!ignore) {
+                            try {
+                                const initializePlugin = plugin as () => void;
+                                initializePlugin(); // TODO
+                            } catch (error) {
+                                console.error(error);
+                            }
+                        }
+                    },
+                    console.error,
+                );
+            }
         }
-      }
+
+        function loadRepos(repoUrls: string[]) {
+            for (const repoUrl of repoUrls) {
+                const baseUrl = `${repoUrl}/.viuws`;
+                const registryUrl = `${baseUrl}/registry.yaml`;
+                fetchYaml<Registry>(registryUrl).then((registry) => {
+                    if (!ignore && registry.modules) {
+                        const moduleUrls = registry.modules.map(
+                            (moduleRef) => `${baseUrl}/${moduleRef.path}`,
+                        );
+                        loadModules(moduleUrls);
+                    }
+                    if (!ignore && registry.plugins) {
+                        const pluginUrls = registry.plugins.map(
+                            (pluginRef) => `${baseUrl}/${pluginRef.path}`,
+                        );
+                        loadPlugins(pluginUrls);
+                    }
+                    if (!ignore && registry.repos) {
+                        loadRepos(registry.repos);
+                    }
+                }, console.error);
+            }
+        }
+
+        if (loaded) {
+            loadRepos(repoUrls);
+        }
+
+        return () => {
+            ignore = true;
+        };
+    }, [loaded, repoUrls, registerModule]);
+
+    if (!loaded) {
+        return (
+            <div
+                className="flex items-center justify-center"
+                style={{ width: "100vw", height: "100vh" }}
+            >
+                <p>Loading...</p>
+            </div>
+        );
     }
-
-    if (appLoaded) {
-      loadRegistries();
-    }
-
-    return () => {
-      ignore = true;
-    };
-  }, [appLoaded, registries, registerProcess, setAppStatus]);
-
-  if (!appLoaded) {
-    return (
-      <div
-        className="flex items-center justify-center"
-        style={{ width: "100vw", height: "100vh" }}
-      >
-        <p>{appStatus}</p>
-      </div>
-    );
-  }
-  return <Home />;
+    return <Home />;
 }
 
 export default App;

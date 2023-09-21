@@ -1,21 +1,21 @@
 import { create } from "zustand";
 
 export type ConfigState = {
-  registries: string[];
+    repos: string[];
 };
 
 type ConfigActions = {
-  load: (configState: ConfigState) => void;
+    load: (configState: ConfigState) => void;
 };
 
 const defaultConfigState: ConfigState = {
-  registries: [],
+    repos: [],
 };
 
 const useConfigStore = create<ConfigState & ConfigActions>()((set) => ({
-  ...defaultConfigState,
-  load: (configState: ConfigState) =>
-    set({ ...defaultConfigState, ...configState }),
+    ...defaultConfigState,
+    load: (configState: ConfigState) =>
+        set({ ...defaultConfigState, ...configState }),
 }));
 
 export default useConfigStore;

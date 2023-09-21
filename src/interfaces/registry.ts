@@ -6,10 +6,16 @@
  */
 
 export interface Registry {
-  schemaVersion?: string;
-  processes?: ProcessRef[];
+    schemaVersion?: string;
+    modules?: ModuleRef[];
+    plugins?: PluginRef[];
+    repos?: string[];
 }
-export interface ProcessRef {
-  id: string;
-  path: string;
+export interface ModuleRef {
+    id: string;
+    path: string;
+}
+export interface PluginRef {
+    id: string;
+    path: string;
 }

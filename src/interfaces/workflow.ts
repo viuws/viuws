@@ -6,35 +6,38 @@
  */
 
 export interface Workflow {
-  schemaVersion?: string;
-  name: string;
-  processes?: {
-    [k: string]: ProcessConfig;
-  };
-  environments?: {
-    [k: string]: Environment;
-  };
+    schemaVersion?: string;
+    name: string;
+    tasks?: {
+        [k: string]: Task;
+    };
+    environments?: {
+        [k: string]: Environment;
+    };
 }
-export interface ProcessConfig {
-  repository?: string | null;
-  revision?: string | null;
-  path: string;
-  inputs?: {
-    [k: string]: string;
-  };
-  outputs?: {
-    [k: string]: string;
-  };
-  env?: {
-    [k: string]: unknown;
-  };
-  args?: string[];
-  environment?: string | null;
+export interface Task {
+    module_repo?: string | null;
+    module_rev?: string | null;
+    module_path: string;
+    moduleConfig: ModuleConfig;
+    environment?: string | null;
+}
+export interface ModuleConfig {
+    inputs?: {
+        [k: string]: string;
+    };
+    outputs?: {
+        [k: string]: string;
+    };
+    env?: {
+        [k: string]: unknown;
+    };
+    args?: string[];
 }
 export interface Environment {
-  name: string;
-  baseDir: string;
-  dataMappings?: {
-    [k: string]: string;
-  };
+    name: string;
+    baseDir: string;
+    dataMappings?: {
+        [k: string]: string;
+    };
 }

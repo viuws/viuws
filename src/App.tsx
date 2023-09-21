@@ -6,7 +6,6 @@ import { Registry } from "./interfaces/registry";
 import Home from "./pages/Home";
 import useAppStore from "./stores/app";
 import useConfigStore, { ConfigState } from "./stores/config";
-import usePluginsStore from "./stores/plugins";
 import fetchYaml from "./utils/fetchYaml";
 import loadScript from "./utils/loadScript";
 
@@ -16,7 +15,7 @@ export default function App() {
     const setLoaded = useAppStore((state) => state.setLoaded);
     const repoUrls = useConfigStore((state) => state.repos);
     const registerModule = useAppStore((state) => state.registerModule);
-    const refreshPlugins = usePluginsStore((state) => state.refresh);
+    const refreshPlugins = useAppStore((state) => state.refreshPlugins);
 
     useEffect(() => {
         let ignore = false;

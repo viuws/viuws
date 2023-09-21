@@ -10,6 +10,7 @@ export type AppState = {
 type AppActions = {
     setLoaded: (loaded: boolean) => void;
     registerModule: (module: Module) => void;
+    refreshPlugins: () => void;
 };
 
 const defaultAppState: AppState = {
@@ -22,6 +23,9 @@ const useAppStore = create<AppState & AppActions>()((set) => ({
     setLoaded: (loaded) => set({ loaded: loaded }),
     registerModule: (module) =>
         set((state) => ({ modules: [...state.modules, module] })),
+    refreshPlugins: () => {
+        console.info("refreshPlugins");
+    },
 }));
 
 export default useAppStore;

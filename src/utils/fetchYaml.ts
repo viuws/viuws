@@ -1,6 +1,6 @@
 import { load as loadYaml } from "js-yaml";
 
-async function fetchYaml<T>(url: string) {
+export default async function fetchYaml<T>(url: string) {
     const response = await window.fetch(url);
     if (response.ok) {
         const text = await response.text();
@@ -9,5 +9,3 @@ async function fetchYaml<T>(url: string) {
         return Promise.reject(response.statusText);
     }
 }
-
-export default fetchYaml;

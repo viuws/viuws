@@ -1,5 +1,3 @@
-function ModulePanel() {
+export default function ModulePanel() {
     return <></>;
 }
-
-export default ModulePanel;

@@ -7,7 +7,7 @@ import Navbar from "../components/Navbar";
 import useReactFlowStore from "../stores/reactFlow";
 import "./Home.css";
 
-function Home() {
+export default function Home() {
     const reactFlowNodes = useReactFlowStore((state) => state.nodes);
     const reactFlowEdges = useReactFlowStore((state) => state.edges);
     const onReactFlowNodesChange = useReactFlowStore(
@@ -46,5 +46,3 @@ function Home() {
         </Split>
     );
 }
-
-export default Home;

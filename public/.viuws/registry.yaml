@@ -1,0 +1,7 @@
+modules:
+    - id: napari
+      path: modules/napari.yaml
+    - id: regionprops
+      path: modules/regionprops.yaml
+plugins:
+    - plugins/nextflow.js

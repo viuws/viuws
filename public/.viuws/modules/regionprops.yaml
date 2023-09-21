@@ -1,0 +1,24 @@
+name: Region properties
+description: Measure properties of labeled image regions.
+category: Measurement
+container:
+    image: ghcr.io/viuws/regionprops
+input_channels:
+    - name: Labels
+      description: Labeled input images. Labels with value 0 are ignored.
+      required: true
+    - name: Images
+      description: >
+          Intensity images with the same size as the labeled images, plus 
+          optionally an extra dimension for multichannel data. The extra
+          channel dimension, if present, must be the last axis.
+output_channels:
+    - name: Regions
+      description: >
+          A table with region properties. The table is in CSV format, with a
+          header row. The first column contains the region label. The remaining
+          columns contain the region properties. The number of columns depends
+          on the properties selected in the configuration.
+      generated_file_pattern: "*.csv"
+args_json_schema: # TODO
+args_ui_schema: # TODO

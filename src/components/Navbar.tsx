@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import useWorkflowStore from "../stores/workflow";
 
-function Navbar() {
+export default function Navbar() {
     const workflowName = useWorkflowStore((state) => state.name);
     const setWorkflowName = useWorkflowStore((state) => state.setName);
 
@@ -39,5 +39,3 @@ function Navbar() {
         </div>
     );
 }
-
-export default Navbar;

@@ -6,14 +6,17 @@ import { Registry } from "./interfaces/registry";
 import Home from "./pages/Home";
 import useAppStore from "./stores/app";
 import useConfigStore, { ConfigState } from "./stores/config";
+import usePluginsStore from "./stores/plugins";
 import fetchYaml from "./utils/fetchYaml";
+import loadScript from "./utils/loadScript";
 
-function App() {
+export default function App() {
     const loaded = useAppStore((state) => state.loaded);
     const loadConfig = useConfigStore((state) => state.load);
     const setLoaded = useAppStore((state) => state.setLoaded);
     const repoUrls = useConfigStore((state) => state.repos);
     const registerModule = useAppStore((state) => state.registerModule);
+    const refreshPlugins = usePluginsStore((state) => state.refresh);
 
     useEffect(() => {
         let ignore = false;
@@ -36,9 +39,11 @@ function App() {
 
     useEffect(() => {
         let ignore = false;
+        const scriptElements: HTMLScriptElement[] = [];
 
         function loadModules(moduleUrls: string[]) {
-            for (const moduleUrl of moduleUrls) {
+            const uniqueModuleUrls = new Set(moduleUrls);
+            for (const moduleUrl of uniqueModuleUrls) {
                 fetchYaml<Module>(moduleUrl).then((module) => {
                     if (!ignore) {
                         try {
@@ -52,25 +57,17 @@ function App() {
         }
 
         function loadPlugins(pluginUrls: string[]) {
-            for (const pluginUrl of pluginUrls) {
-                import(/* @vite-ignore */ pluginUrl).then(
-                    ({ default: plugin }) => {
-                        if (!ignore) {
-                            try {
-                                const initializePlugin = plugin as () => void;
-                                initializePlugin(); // TODO
-                            } catch (error) {
-                                console.error(error);
-                            }
-                        }
-                    },
-                    console.error,
-                );
+            const uniquePluginUrls = new Set(pluginUrls);
+            for (const pluginUrl of uniquePluginUrls) {
+                const scriptElement = loadScript(pluginUrl, refreshPlugins);
+                document.body.appendChild(scriptElement);
+                scriptElements.push(scriptElement);
             }
         }
 
         function loadRepos(repoUrls: string[]) {
-            for (const repoUrl of repoUrls) {
+            const uniqueRepoUrls = new Set(repoUrls);
+            for (const repoUrl of uniqueRepoUrls) {
                 const baseUrl = `${repoUrl}/.viuws`;
                 const registryUrl = `${baseUrl}/registry.yaml`;
                 fetchYaml<Registry>(registryUrl).then((registry) => {
@@ -82,7 +79,7 @@ function App() {
                     }
                     if (!ignore && registry.plugins) {
                         const pluginUrls = registry.plugins.map(
-                            (pluginRef) => `${baseUrl}/${pluginRef.path}`,
+                            (pluginPath) => `${baseUrl}/${pluginPath}`,
                         );
                         loadPlugins(pluginUrls);
                     }
@@ -99,8 +96,11 @@ function App() {
 
         return () => {
             ignore = true;
+            for (const scriptElement of scriptElements) {
+                document.body.removeChild(scriptElement);
+            }
         };
-    }, [loaded, repoUrls, registerModule]);
+    }, [loaded, repoUrls, registerModule, refreshPlugins]);
 
     if (!loaded) {
         return (
@@ -114,5 +114,3 @@ function App() {
     }
     return <Home />;
 }
-
-export default App;

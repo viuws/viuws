@@ -8,14 +8,10 @@
 export interface Registry {
     schemaVersion?: string;
     modules?: ModuleRef[];
-    plugins?: PluginRef[];
+    plugins?: string[];
     repos?: string[];
 }
 export interface ModuleRef {
-    id: string;
-    path: string;
-}
-export interface PluginRef {
     id: string;
     path: string;
 }

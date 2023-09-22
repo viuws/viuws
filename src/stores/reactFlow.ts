@@ -34,13 +34,13 @@ const defaultReactFlowState: ReactFlowState = {
 const useReactFlowStore = create<ReactFlowState & ReactFlowActions>()(
     (set, get) => ({
         ...defaultReactFlowState,
-        setNodes: (nodes: Node[]) => set({ nodes: nodes }),
-        setEdges: (edges: Edge[]) => set({ edges: edges }),
-        onNodesChange: (changes: NodeChange[]) =>
+        setNodes: (nodes) => set({ nodes: nodes }),
+        setEdges: (edges) => set({ edges: edges }),
+        onNodesChange: (changes) =>
             set({ nodes: applyNodeChanges(changes, get().nodes) }),
-        onEdgesChange: (changes: EdgeChange[]) =>
+        onEdgesChange: (changes) =>
             set({ edges: applyEdgeChanges(changes, get().edges) }),
-        onConnect: (connection: Connection) =>
+        onConnect: (connection) =>
             set({ edges: addEdge(connection, get().edges) }),
     }),
 );

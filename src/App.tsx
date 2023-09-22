@@ -1,21 +1,41 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 import "./App.css";
 import { Module } from "./interfaces/module";
+import { Plugin } from "./interfaces/plugin";
 import { Registry } from "./interfaces/registry";
 import Home from "./pages/Home";
 import useAppStore from "./stores/app";
 import useConfigStore, { ConfigState } from "./stores/config";
+import createScriptElement from "./utils/createScriptElement";
 import fetchYaml from "./utils/fetchYaml";
-import loadScript from "./utils/loadScript";
 
 export default function App() {
-    const loaded = useAppStore((state) => state.loaded);
+    const appLoaded = useAppStore((state) => state.loaded);
+    const setAppLoaded = useAppStore((state) => state.setLoaded);
     const loadConfig = useConfigStore((state) => state.load);
-    const setLoaded = useAppStore((state) => state.setLoaded);
     const repoUrls = useConfigStore((state) => state.repos);
     const registerModule = useAppStore((state) => state.registerModule);
-    const refreshPlugins = useAppStore((state) => state.refreshPlugins);
+    const registerPlugin = useAppStore((state) => state.registerPlugin);
+
+    const handlePluginEvent = useCallback(
+        (event: Event) => {
+            try {
+                const plugin = (event as CustomEvent).detail as Plugin;
+                registerPlugin(plugin);
+            } catch (error) {
+                console.error(error);
+            }
+        },
+        [registerPlugin],
+    );
+
+    useEffect(() => {
+        window.addEventListener("viuws:plugin", handlePluginEvent);
+        return () => {
+            window.removeEventListener("viuws:plugin", handlePluginEvent);
+        };
+    }, [handlePluginEvent]);
 
     useEffect(() => {
         let ignore = false;
@@ -25,7 +45,7 @@ export default function App() {
                 if (!ignore) {
                     loadConfig(configState);
                 }
-                setLoaded(true);
+                setAppLoaded(true);
             }, console.error);
         }
 
@@ -34,11 +54,11 @@ export default function App() {
         return () => {
             ignore = true;
         };
-    }, [loadConfig, setLoaded]);
+    }, [loadConfig, setAppLoaded]);
 
     useEffect(() => {
         let ignore = false;
-        const scriptElements: HTMLScriptElement[] = [];
+        const pluginScriptElements: HTMLScriptElement[] = [];
 
         function loadModules(moduleUrls: string[]) {
             const uniqueModuleUrls = new Set(moduleUrls);
@@ -58,9 +78,9 @@ export default function App() {
         function loadPlugins(pluginUrls: string[]) {
             const uniquePluginUrls = new Set(pluginUrls);
             for (const pluginUrl of uniquePluginUrls) {
-                const scriptElement = loadScript(pluginUrl, refreshPlugins);
-                document.body.appendChild(scriptElement);
-                scriptElements.push(scriptElement);
+                const pluginScriptElement = createScriptElement(pluginUrl);
+                document.body.appendChild(pluginScriptElement);
+                pluginScriptElements.push(pluginScriptElement);
             }
         }
 
@@ -78,7 +98,7 @@ export default function App() {
                     }
                     if (!ignore && registry.plugins) {
                         const pluginUrls = registry.plugins.map(
-                            (pluginPath) => `${baseUrl}/${pluginPath}`,
+                            (pluginRef) => `${baseUrl}/${pluginRef.path}`,
                         );
                         loadPlugins(pluginUrls);
                     }
@@ -89,19 +109,19 @@ export default function App() {
             }
         }
 
-        if (loaded) {
+        if (appLoaded) {
             loadRepos(repoUrls);
         }
 
         return () => {
             ignore = true;
-            for (const scriptElement of scriptElements) {
-                document.body.removeChild(scriptElement);
+            for (const pluginScriptElement of pluginScriptElements) {
+                document.body.removeChild(pluginScriptElement);
             }
         };
-    }, [loaded, repoUrls, registerModule, refreshPlugins]);
+    }, [appLoaded, repoUrls, registerModule]);
 
-    if (!loaded) {
+    if (!appLoaded) {
         return (
             <div
                 className="flex items-center justify-center"

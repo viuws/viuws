@@ -32,7 +32,7 @@ export default function Navbar() {
                 <input
                     className="input input-ghost font-bold"
                     value={workflowName}
-                    onChange={(e) => setWorkflowName(e.target.value)}
+                    onChange={(event) => setWorkflowName(event.target.value)}
                 />
                 <ul className="menu menu-horizontal"></ul>
             </div>

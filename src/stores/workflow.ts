@@ -14,7 +14,7 @@ const defaultWorkflowState: WorkflowState = {
 
 const useWorkflowStore = create<WorkflowState & WorkflowActions>()((set) => ({
     ...defaultWorkflowState,
-    setName: (name: string) => set({ name: name }),
+    setName: (name) => set({ name: name }),
 }));
 
 export default useWorkflowStore;

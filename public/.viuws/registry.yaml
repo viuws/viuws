@@ -4,4 +4,5 @@ modules:
     - id: regionprops
       path: modules/regionprops.yaml
 plugins:
-    - plugins/nextflow.js
+    - id: nextflow
+      path: plugins/nextflow.js

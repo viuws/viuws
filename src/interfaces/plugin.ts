@@ -7,10 +7,7 @@
 
 export interface Plugin {
     schemaVersion?: string;
-    plugin:
-        | WorkflowImportPluginInstance
-        | WorkflowExportPluginInstance
-        | WorkflowUIPluginInstance;
+    plugin: WorkflowImportPluginInstance | WorkflowExportPluginInstance;
 }
 export interface WorkflowImportPluginInstance {
     name: string;
@@ -23,10 +20,4 @@ export interface WorkflowExportPluginInstance {
     type: "workflowExport";
     exportMenuItem: string;
     exportFunction: unknown;
-}
-export interface WorkflowUIPluginInstance {
-    name: string;
-    type: "workflowUI";
-    uiTitle: string;
-    uiFunction: unknown;
 }

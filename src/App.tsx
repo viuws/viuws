@@ -14,7 +14,7 @@ export default function App() {
     const appLoaded = useAppStore((state) => state.loaded);
     const setAppLoaded = useAppStore((state) => state.setLoaded);
     const loadConfig = useConfigStore((state) => state.load);
-    const repoUrls = useConfigStore((state) => state.repos);
+    const configRepos = useConfigStore((state) => state.repos);
     const registerModule = useAppStore((state) => state.registerModule);
     const registerPlugin = useAppStore((state) => state.registerPlugin);
 
@@ -110,7 +110,7 @@ export default function App() {
         }
 
         if (appLoaded) {
-            loadRepos(repoUrls);
+            loadRepos(configRepos);
         }
 
         return () => {
@@ -119,7 +119,7 @@ export default function App() {
                 document.body.removeChild(pluginScriptElement);
             }
         };
-    }, [appLoaded, repoUrls, registerModule]);
+    }, [appLoaded, configRepos, registerModule]);
 
     if (!appLoaded) {
         return (

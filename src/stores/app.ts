@@ -5,7 +5,6 @@ import {
     Plugin,
     WorkflowExportPluginInstance,
     WorkflowImportPluginInstance,
-    WorkflowUIPluginInstance,
 } from "../interfaces/plugin";
 
 export type AppState = {
@@ -13,7 +12,6 @@ export type AppState = {
     modules: Module[];
     workflowImportPlugins: WorkflowImportPluginInstance[];
     workflowExportPlugins: WorkflowExportPluginInstance[];
-    workflowUIPlugins: WorkflowUIPluginInstance[];
 };
 
 type AppActions = {
@@ -27,7 +25,6 @@ const defaultAppState: AppState = {
     modules: [],
     workflowImportPlugins: [],
     workflowExportPlugins: [],
-    workflowUIPlugins: [],
 };
 
 const useAppStore = create<AppState & AppActions>()((set) => ({
@@ -36,8 +33,8 @@ const useAppStore = create<AppState & AppActions>()((set) => ({
     registerModule: (module) =>
         set((state) => ({ modules: [...state.modules, module] })),
     registerPlugin: (plugin) => {
-        switch (plugin.plugin.type.toString()) {
-            case "workflowImportPlugin":
+        switch (plugin.plugin.type) {
+            case "workflowImport":
                 set((state) => ({
                     workflowImportPlugins: [
                         ...state.workflowImportPlugins,
@@ -45,26 +42,13 @@ const useAppStore = create<AppState & AppActions>()((set) => ({
                     ],
                 }));
                 break;
-            case "workflowExportPlugin":
+            case "workflowExport":
                 set((state) => ({
                     workflowExportPlugins: [
                         ...state.workflowExportPlugins,
                         plugin.plugin as WorkflowExportPluginInstance,
                     ],
                 }));
-                break;
-            case "workflowUIPlugin":
-                set((state) => ({
-                    workflowUIPlugins: [
-                        ...state.workflowUIPlugins,
-                        plugin.plugin as WorkflowUIPluginInstance,
-                    ],
-                }));
-                break;
-            default:
-                console.error(
-                    `Plugin ${plugin.plugin.name} has an unsupported type: ${plugin.plugin.type}}`,
-                );
                 break;
         }
     },

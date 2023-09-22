@@ -45,7 +45,9 @@ export default function Navbar() {
                                                 >
                                                     <a
                                                         onClick={(_event) => {
-                                                            workflowImportPlugin.importFunction();
+                                                            (
+                                                                workflowImportPlugin.importFunction as () => void
+                                                            )();
                                                         }}
                                                     >
                                                         {
@@ -73,7 +75,9 @@ export default function Navbar() {
                                                 >
                                                     <a
                                                         onClick={(_event) => {
-                                                            workflowExportPlugin.exportFunction();
+                                                            (
+                                                                workflowExportPlugin.exportFunction as () => void
+                                                            )();
                                                         }}
                                                     >
                                                         {

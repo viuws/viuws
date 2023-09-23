@@ -31,7 +31,7 @@ jobs:
             - name: Build
               run: npm run build
               env:
-                  BASE_URL: "/viuws-editor/"
+                  BASE_URL: "/viuws/"
             - uses: actions/upload-pages-artifact@v2
               with:
                   path: "./dist"

@@ -47,7 +47,7 @@
         "vite": "^4.4.9"
     },
     "lint-staged": {
-        "src/*.{js,jsx,ts,tsx}": "eslint --report-unused-disable-directives --max-warnings 0 --cache --fix",
+        "src/**/*.{js,jsx,ts,tsx}": "eslint --report-unused-disable-directives --max-warnings 0 --cache --fix",
         "*.{js,jsx,ts,tsx,html,css,json,md,yml,yaml}": "prettier --write"
     }
 }

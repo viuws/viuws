@@ -44,6 +44,7 @@ export default function Navbar() {
                                                     }
                                                 >
                                                     <a
+                                                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                                         onClick={(_event) => {
                                                             (
                                                                 workflowImportPlugin.importFunction as () => void
@@ -74,6 +75,7 @@ export default function Navbar() {
                                                     }
                                                 >
                                                     <a
+                                                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                                         onClick={(_event) => {
                                                             (
                                                                 workflowExportPlugin.exportFunction as () => void

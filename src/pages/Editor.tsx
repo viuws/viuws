@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import Split from "react-split";
 import ReactFlow, {
     Background,
@@ -10,12 +10,14 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 
+import ModuleNode from "../components/ModuleNode";
 import ModulePanel from "../components/ModulePanel";
 import Navbar from "../components/Navbar";
 import useWorkflowStore from "../stores/workflow";
 import "./Editor.css";
 
 export default function Editor() {
+    const nodeTypes = useMemo(() => ({ module: ModuleNode }), []);
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const [reactFlowInstance, setReactFlowInstance] =
         useState<ReactFlowInstance | null>(null);
@@ -61,6 +63,7 @@ export default function Editor() {
                 });
                 const node: Node = {
                     id: "new_node", // TODO
+                    type: "module",
                     position: position,
                     data: {}, // TODO
                 };
@@ -79,6 +82,7 @@ export default function Editor() {
         >
             <div id="reactFlowWrapper" ref={reactFlowWrapper}>
                 <ReactFlow
+                    nodeTypes={nodeTypes}
                     nodes={workflowNodes}
                     edges={workflowEdges}
                     onNodesChange={onWorkflowNodesChange}

@@ -1,22 +1,42 @@
+import { useCallback } from "react";
 import Split from "react-split";
 import ReactFlow, { Background, Controls, MiniMap, Panel } from "reactflow";
 import "reactflow/dist/style.css";
 
 import ModulePanel from "../components/ModulePanel";
 import Navbar from "../components/Navbar";
-import useReactFlowStore from "../stores/reactFlow";
+import useWorkflowStore from "../stores/workflow";
 import "./Home.css";
 
 export default function Home() {
-    const reactFlowNodes = useReactFlowStore((state) => state.nodes);
-    const reactFlowEdges = useReactFlowStore((state) => state.edges);
-    const onReactFlowNodesChange = useReactFlowStore(
-        (state) => state.onNodesChange,
+    const workflowNodes = useWorkflowStore((workflow) => workflow.nodes);
+    const workflowEdges = useWorkflowStore((workflow) => workflow.edges);
+    const onWorkflowNodesChange = useWorkflowStore(
+        (workflow) => workflow.onNodesChange,
     );
-    const onReactFlowEdgesChange = useReactFlowStore(
-        (state) => state.onEdgesChange,
+    const onWorkflowEdgesChange = useWorkflowStore(
+        (workflow) => workflow.onEdgesChange,
     );
-    const onReactFlowConnect = useReactFlowStore((state) => state.onConnect);
+    const onWorkflowConnect = useWorkflowStore(
+        (workflow) => workflow.onConnect,
+    );
+
+    const onDragOver = useCallback(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (_event: React.DragEvent<HTMLDivElement>) => {
+            // TODO
+        },
+        [],
+    );
+
+    const onDrop = useCallback(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        (_event: React.DragEvent<HTMLDivElement>) => {
+            // TODO
+        },
+        [],
+    );
+
     return (
         <Split
             className="split-flex"
@@ -26,11 +46,13 @@ export default function Home() {
         >
             <div id="reactFlowContainer">
                 <ReactFlow
-                    nodes={reactFlowNodes}
-                    edges={reactFlowEdges}
-                    onNodesChange={onReactFlowNodesChange}
-                    onEdgesChange={onReactFlowEdgesChange}
-                    onConnect={onReactFlowConnect}
+                    nodes={workflowNodes}
+                    edges={workflowEdges}
+                    onNodesChange={onWorkflowNodesChange}
+                    onEdgesChange={onWorkflowEdgesChange}
+                    onConnect={onWorkflowConnect}
+                    onDragOver={onDragOver}
+                    onDrop={onDrop}
                 >
                     <Background />
                     <MiniMap position="top-right" pannable zoomable />

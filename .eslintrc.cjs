@@ -25,10 +25,4 @@ module.exports = {
         ],
         "@typescript-eslint/no-non-null-assertion": "off",
     },
-    overrides: [
-        {
-            extends: ["plugin:@typescript-eslint/disable-type-checked"],
-            files: ["./**/*.js"],
-        },
-    ],
 };

@@ -3,11 +3,14 @@ function nextflowExport() {}
 window.dispatchEvent(
     new CustomEvent("viuws:plugin", {
         detail: {
+            url: ".viuws/plugins/nextflow.js",
             plugin: {
-                name: "nextflow",
-                type: "workflowExport",
-                exportMenuItem: "Nextflow",
-                exportFunction: nextflowExport,
+                plugin: {
+                    name: "nextflow",
+                    type: "workflowExport",
+                    exportMenuItem: "Nextflow",
+                    exportFunction: nextflowExport,
+                },
             },
         },
     }),

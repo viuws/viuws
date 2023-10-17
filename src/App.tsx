@@ -11,18 +11,22 @@ import createScriptElement from "./utils/createScriptElement";
 import fetchYaml from "./utils/fetchYaml";
 
 export default function App() {
-    const appLoaded = useAppStore((state) => state.loaded);
-    const setAppLoaded = useAppStore((state) => state.setLoaded);
-    const loadConfig = useConfigStore((state) => state.load);
-    const configRepos = useConfigStore((state) => state.repos);
-    const registerModule = useAppStore((state) => state.registerModule);
-    const registerPlugin = useAppStore((state) => state.registerPlugin);
+    const loaded = useAppStore((app) => app.loaded);
+    const setLoaded = useAppStore((app) => app.setLoaded);
+    const registerModule = useAppStore((app) => app.registerModule);
+    const registerPlugin = useAppStore((app) => app.registerPlugin);
+
+    const configRepos = useConfigStore((config) => config.repos);
+    const loadConfig = useConfigStore((config) => config.load);
 
     const handlePluginEvent = useCallback(
         (event: Event) => {
             try {
-                const plugin = (event as CustomEvent).detail as Plugin;
-                registerPlugin(plugin);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                const pluginUrl = (event as CustomEvent).detail.url as string;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                const plugin = (event as CustomEvent).detail.plugin as Plugin;
+                registerPlugin(pluginUrl, plugin);
             } catch (error) {
                 console.error(error);
             }
@@ -45,7 +49,7 @@ export default function App() {
                 if (!ignore) {
                     loadConfig(configState);
                 }
-                setAppLoaded(true);
+                setLoaded(true);
             }, console.error);
         }
 
@@ -54,7 +58,7 @@ export default function App() {
         return () => {
             ignore = true;
         };
-    }, [loadConfig, setAppLoaded]);
+    }, [loadConfig, setLoaded]);
 
     useEffect(() => {
         let ignore = false;
@@ -66,7 +70,7 @@ export default function App() {
                 fetchYaml<Module>(moduleUrl).then((module) => {
                     if (!ignore) {
                         try {
-                            registerModule(module);
+                            registerModule(moduleUrl, module);
                         } catch (error) {
                             console.error(error);
                         }
@@ -109,7 +113,7 @@ export default function App() {
             }
         }
 
-        if (appLoaded) {
+        if (loaded) {
             loadRepos(configRepos);
         }
 
@@ -119,9 +123,9 @@ export default function App() {
                 document.body.removeChild(pluginScriptElement);
             }
         };
-    }, [appLoaded, configRepos, registerModule]);
+    }, [loaded, configRepos, registerModule]);
 
-    if (!appLoaded) {
+    if (!loaded) {
         return (
             <div
                 className="flex items-center justify-center"

@@ -5,14 +5,11 @@ import useAppStore from "../stores/app";
 import useWorkflowStore from "../stores/workflow";
 
 export default function Navbar() {
-    const workflowName = useWorkflowStore((state) => state.name);
-    const setWorkflowName = useWorkflowStore((state) => state.setName);
-    const workflowImportPlugins = useAppStore(
-        (state) => state.workflowImportPlugins,
-    );
-    const workflowExportPlugins = useAppStore(
-        (state) => state.workflowExportPlugins,
-    );
+    const importPlugins = useAppStore((app) => app.importPlugins);
+    const exportPlugins = useAppStore((app) => app.exportPlugins);
+
+    const workflowName = useWorkflowStore((workflow) => workflow.name);
+    const setWorkflowName = useWorkflowStore((workflow) => workflow.setName);
 
     return (
         <div className="navbar">
@@ -31,29 +28,23 @@ export default function Navbar() {
                         <li>
                             <a>Open</a>
                         </li>
-                        {workflowImportPlugins.length > 0 && (
+                        {importPlugins.size > 0 && (
                             <li>
                                 <details>
                                     <summary>Import</summary>
                                     <ul>
-                                        {workflowImportPlugins.map(
-                                            (workflowImportPlugin) => (
-                                                <li
-                                                    key={
-                                                        workflowImportPlugin.name
-                                                    }
-                                                >
+                                        {[...importPlugins].map(
+                                            ([pluginUrl, plugin]) => (
+                                                <li key={pluginUrl}>
                                                     <a
                                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                                         onClick={(_event) => {
                                                             (
-                                                                workflowImportPlugin.importFunction as () => void
+                                                                plugin.importFunction as () => void
                                                             )();
                                                         }}
                                                     >
-                                                        {
-                                                            workflowImportPlugin.importMenuItem
-                                                        }
+                                                        {plugin.importMenuItem}
                                                     </a>
                                                 </li>
                                             ),
@@ -62,29 +53,23 @@ export default function Navbar() {
                                 </details>
                             </li>
                         )}
-                        {workflowExportPlugins.length > 0 && (
+                        {exportPlugins.size > 0 && (
                             <li>
                                 <details>
                                     <summary>Export</summary>
                                     <ul>
-                                        {workflowExportPlugins.map(
-                                            (workflowExportPlugin) => (
-                                                <li
-                                                    key={
-                                                        workflowExportPlugin.name
-                                                    }
-                                                >
+                                        {[...exportPlugins].map(
+                                            ([pluginUrl, plugin]) => (
+                                                <li key={pluginUrl}>
                                                     <a
                                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                                         onClick={(_event) => {
                                                             (
-                                                                workflowExportPlugin.exportFunction as () => void
+                                                                plugin.exportFunction as () => void
                                                             )();
                                                         }}
                                                     >
-                                                        {
-                                                            workflowExportPlugin.exportMenuItem
-                                                        }
+                                                        {plugin.exportMenuItem}
                                                     </a>
                                                 </li>
                                             ),

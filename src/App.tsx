@@ -4,7 +4,7 @@ import "./App.css";
 import { Module } from "./interfaces/module";
 import { Plugin } from "./interfaces/plugin";
 import { Registry } from "./interfaces/registry";
-import Home from "./pages/Home";
+import Editor from "./pages/Editor";
 import useAppStore from "./stores/app";
 import useConfigStore, { ConfigState } from "./stores/config";
 import createScriptElement from "./utils/createScriptElement";
@@ -135,5 +135,5 @@ export default function App() {
             </div>
         );
     }
-    return <Home />;
+    return <Editor />;
 }

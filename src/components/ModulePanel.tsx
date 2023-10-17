@@ -5,9 +5,9 @@ export default function ModulePanel() {
 
     const onDragStart = (
         event: React.DragEvent<HTMLLIElement>,
-        moduleName: string,
+        moduleUrl: string,
     ) => {
-        event.dataTransfer.setData("application/reactflow", moduleName);
+        event.dataTransfer.setData("viuws/module", moduleUrl);
         event.dataTransfer.effectAllowed = "move";
     };
 
@@ -16,7 +16,7 @@ export default function ModulePanel() {
             {[...modules].map(([moduleUrl, module]) => (
                 <li
                     key={moduleUrl}
-                    onDragStart={(event) => onDragStart(event, module.name)}
+                    onDragStart={(event) => onDragStart(event, moduleUrl)}
                     draggable
                 >
                     {module.name}

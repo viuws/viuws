@@ -18,8 +18,7 @@ export type WorkflowState = {
 
 type WorkflowActions = {
     setName: (name: string) => void;
-    setNodes: (nodes: Node[]) => void;
-    setEdges: (edges: Edge[]) => void;
+    addNode: (node: Node) => void;
     onNodesChange: OnNodesChange;
     onEdgesChange: OnEdgesChange;
     onConnect: OnConnect;
@@ -31,19 +30,16 @@ const defaultWorkflowState: WorkflowState = {
     edges: [],
 };
 
-const useWorkflowStore = create<WorkflowState & WorkflowActions>()(
-    (set, get) => ({
-        ...defaultWorkflowState,
-        setName: (name) => set({ name: name }),
-        setNodes: (nodes) => set({ nodes: nodes }),
-        setEdges: (edges) => set({ edges: edges }),
-        onNodesChange: (changes) =>
-            set({ nodes: applyNodeChanges(changes, get().nodes) }),
-        onEdgesChange: (changes) =>
-            set({ edges: applyEdgeChanges(changes, get().edges) }),
-        onConnect: (connection) =>
-            set({ edges: addEdge(connection, get().edges) }),
-    }),
-);
+const useWorkflowStore = create<WorkflowState & WorkflowActions>()((set) => ({
+    ...defaultWorkflowState,
+    setName: (name) => set({ name: name }),
+    addNode: (node) => set((state) => ({ nodes: [...state.nodes, node] })),
+    onNodesChange: (changes) =>
+        set((state) => ({ nodes: applyNodeChanges(changes, state.nodes) })),
+    onEdgesChange: (changes) =>
+        set((state) => ({ edges: applyEdgeChanges(changes, state.edges) })),
+    onConnect: (connection) =>
+        set((state) => ({ edges: addEdge(connection, state.edges) })),
+}));
 
 export default useWorkflowStore;

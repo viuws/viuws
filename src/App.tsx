@@ -9,6 +9,7 @@ import useAppStore from "./stores/app";
 import useConfigStore, { ConfigState } from "./stores/config";
 import createScriptElement from "./utils/createScriptElement";
 import fetchYaml from "./utils/fetchYaml";
+import getFetchableUrl from "./utils/getFetchableUrl";
 
 export default function App() {
     const loaded = useAppStore((app) => app.loaded);
@@ -21,14 +22,19 @@ export default function App() {
 
     const handlePluginEvent = useCallback(
         (event: Event) => {
-            try {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                const pluginUrl = (event as CustomEvent).detail.url as string;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                const plugin = (event as CustomEvent).detail.plugin as Plugin;
-                registerPlugin(pluginUrl, plugin);
-            } catch (error) {
-                console.error(error);
+            if (document.currentScript !== null) {
+                const m = /^viuws:plugin-(?<repo>[^#]+)#(?<pluginId>.+)$/.exec(
+                    document.currentScript.id,
+                );
+                if (m !== null && m.groups !== undefined) {
+                    const { repo, pluginId } = m.groups;
+                    try {
+                        const plugin = (event as CustomEvent).detail as Plugin;
+                        registerPlugin(repo, pluginId, plugin);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
             }
         },
         [registerPlugin],
@@ -64,52 +70,62 @@ export default function App() {
         let ignore = false;
         const pluginScriptElements: HTMLScriptElement[] = [];
 
-        function loadModules(moduleUrls: string[]) {
-            const uniqueModuleUrls = new Set(moduleUrls);
-            for (const moduleUrl of uniqueModuleUrls) {
-                fetchYaml<Module>(moduleUrl).then((module) => {
-                    if (!ignore) {
-                        try {
-                            registerModule(moduleUrl, module);
-                        } catch (error) {
-                            console.error(error);
-                        }
+        function loadModule(
+            repo: string,
+            moduleId: string,
+            modulePath: string,
+        ) {
+            const moduleUrl = getFetchableUrl(repo, modulePath);
+            fetchYaml<Module>(moduleUrl).then((module) => {
+                if (!ignore) {
+                    try {
+                        registerModule(repo, moduleId, module);
+                    } catch (error) {
+                        console.error(error);
                     }
-                }, console.error);
-            }
+                }
+            }, console.error);
         }
 
-        function loadPlugins(pluginUrls: string[]) {
-            const uniquePluginUrls = new Set(pluginUrls);
-            for (const pluginUrl of uniquePluginUrls) {
-                const pluginScriptElement = createScriptElement(pluginUrl);
-                document.body.appendChild(pluginScriptElement);
-                pluginScriptElements.push(pluginScriptElement);
-            }
+        function loadPlugin(
+            repo: string,
+            pluginId: string,
+            pluginPath: string,
+        ) {
+            const pluginUrl = getFetchableUrl(repo, pluginPath);
+            const pluginScriptElement = createScriptElement(pluginUrl);
+            pluginScriptElement.id = `viuws:plugin-${repo}#${pluginId}`;
+            document.body.appendChild(pluginScriptElement);
+            pluginScriptElements.push(pluginScriptElement);
         }
 
-        function loadRepos(repoUrls: string[]) {
-            const uniqueRepoUrls = new Set(repoUrls);
-            for (const repoUrl of uniqueRepoUrls) {
-                const baseUrl = `${repoUrl}/.viuws`;
-                const registryUrl = `${baseUrl}/registry.yaml`;
-                fetchYaml<Registry>(registryUrl).then((registry) => {
-                    if (!ignore && registry.modules) {
-                        const moduleUrls = registry.modules.map(
-                            (moduleRef) => `${baseUrl}/${moduleRef.path}`,
-                        );
-                        loadModules(moduleUrls);
+        function loadRepo(repo: string) {
+            const basePath = ".viuws";
+            const registryPath = `${basePath}/registry.yaml`;
+            const registryUrl = getFetchableUrl(repo, registryPath);
+            fetchYaml<Registry>(registryUrl).then((registry) => {
+                if (!ignore && registry.modules) {
+                    for (const moduleRef of registry.modules) {
+                        const modulePath = `${basePath}/${moduleRef.path}`;
+                        loadModule(repo, moduleRef.id, modulePath);
                     }
-                    if (!ignore && registry.plugins) {
-                        const pluginUrls = registry.plugins.map(
-                            (pluginRef) => `${baseUrl}/${pluginRef.path}`,
-                        );
-                        loadPlugins(pluginUrls);
+                }
+                if (!ignore && registry.plugins) {
+                    for (const pluginRef of registry.plugins) {
+                        const pluginPath = `${basePath}/${pluginRef.path}`;
+                        loadPlugin(repo, pluginRef.id, pluginPath);
                     }
-                    if (!ignore && registry.repos) {
-                        loadRepos(registry.repos);
-                    }
-                }, console.error);
+                }
+                if (!ignore && registry.repos) {
+                    loadRepos(registry.repos);
+                }
+            }, console.error);
+        }
+
+        function loadRepos(repos: string[]) {
+            const uniqueRepos = new Set(repos);
+            for (const repo of uniqueRepos) {
+                loadRepo(repo);
             }
         }
 

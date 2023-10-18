@@ -1,14 +1,14 @@
 name: napari
 description: A fast, interactive, multi-dimensional image viewer.
-category: Visualization
 container:
     image: ghcr.io/napari/napari-xpra
-input_channels:
-    - name: Images
-      description: Images to be visualized.
+inputChannels:
+    - id: images
       required: true
-output_channels:
-    - name: Images
-      description: Images that have been visualized.
-env_json_schema: # TODO
-env_ui_schema: # TODO
+outputChannels:
+    - name: images
+envSchema: {}
+envUISchema: {}
+argsSchema: {}
+argsUISchema: {}
+iconUrl: https://cdn.jsdelivr.net/gh/napari/napari/napari/resources/logo.png

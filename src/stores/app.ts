@@ -12,8 +12,8 @@ export type AppState = {
 
 type AppActions = {
     setLoaded: (loaded: boolean) => void;
-    registerModule: (moduleUrl: string, module: Module) => void;
-    registerPlugin: (pluginUrl: string, plugin: Plugin) => void;
+    registerModule: (repo: string, moduleId: string, module: Module) => void;
+    registerPlugin: (repo: string, pluginId: string, plugin: Plugin) => void;
 };
 
 const defaultAppState: AppState = {
@@ -26,16 +26,16 @@ const defaultAppState: AppState = {
 const useAppStore = create<AppState & AppActions>()((set) => ({
     ...defaultAppState,
     setLoaded: (loaded) => set({ loaded: loaded }),
-    registerModule: (moduleUrl, module) =>
+    registerModule: (repo, moduleId, module) =>
         set((state) => ({
-            modules: new Map(state.modules).set(moduleUrl, module),
+            modules: new Map(state.modules).set(`${repo}#${moduleId}`, module),
         })),
-    registerPlugin: (pluginUrl, plugin) => {
+    registerPlugin: (repo, pluginId, plugin) => {
         switch (plugin.plugin.type) {
             case "import":
                 set((state) => ({
                     importPlugins: new Map(state.importPlugins).set(
-                        pluginUrl,
+                        `${repo}#${pluginId}`,
                         plugin.plugin as ImportPlugin,
                     ),
                 }));
@@ -43,7 +43,7 @@ const useAppStore = create<AppState & AppActions>()((set) => ({
             case "export":
                 set((state) => ({
                     exportPlugins: new Map(state.exportPlugins).set(
-                        pluginUrl,
+                        `${repo}#${pluginId}`,
                         plugin.plugin as ExportPlugin,
                     ),
                 }));

@@ -34,8 +34,8 @@ export default function Navbar() {
                                     <summary>Import</summary>
                                     <ul>
                                         {[...importPlugins].map(
-                                            ([pluginUrl, plugin]) => (
-                                                <li key={pluginUrl}>
+                                            ([pluginKey, plugin]) => (
+                                                <li key={pluginKey}>
                                                     <a
                                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                                         onClick={(_event) => {
@@ -59,8 +59,8 @@ export default function Navbar() {
                                     <summary>Export</summary>
                                     <ul>
                                         {[...exportPlugins].map(
-                                            ([pluginUrl, plugin]) => (
-                                                <li key={pluginUrl}>
+                                            ([pluginKey, plugin]) => (
+                                                <li key={pluginKey}>
                                                     <a
                                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                                         onClick={(_event) => {

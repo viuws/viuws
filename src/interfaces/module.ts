@@ -33,16 +33,12 @@ export interface EnvVarValueMapping {
 }
 export interface InputChannel {
     id: string;
-    name: string;
-    description: string;
     cardinality?: IOCardinality & string;
     required?: boolean;
     supportedFilePatterns?: string[] | null;
 }
 export interface OutputChannel {
     id: string;
-    name: string;
-    description: string;
     cardinality?: IOCardinality & string;
     generatedFilePattern?: string | null;
 }

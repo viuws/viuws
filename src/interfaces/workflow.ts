@@ -13,7 +13,6 @@ export interface Workflow {
 }
 export interface Task {
     id: string;
-    name: string;
     module: string;
     moduleConfig: ModuleConfig;
     moduleRepo?: string | null;
@@ -36,6 +35,5 @@ export interface EnvVarValueMapping {
 }
 export interface Environment {
     id: string;
-    name: string;
     baseDir: string;
 }

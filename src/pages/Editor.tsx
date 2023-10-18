@@ -10,14 +10,14 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 
-import ModuleNode from "../components/ModuleNode";
 import ModulePanel from "../components/ModulePanel";
 import Navbar from "../components/Navbar";
+import TaskNode from "../components/TaskNode";
 import useWorkflowStore from "../stores/workflow";
 import "./Editor.css";
 
 export default function Editor() {
-    const nodeTypes = useMemo(() => ({ module: ModuleNode }), []);
+    const nodeTypes = useMemo(() => ({ task: TaskNode }), []);
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const [reactFlowInstance, setReactFlowInstance] =
         useState<ReactFlowInstance | null>(null);
@@ -63,7 +63,7 @@ export default function Editor() {
                 });
                 const node: Node = {
                     id: "new_node", // TODO
-                    type: "module",
+                    type: "task",
                     position: position,
                     data: {}, // TODO
                 };

@@ -13,10 +13,10 @@ export default function ModulePanel() {
 
     return (
         <ul>
-            {[...modules].map(([moduleUrl, module]) => (
+            {[...modules].map(([moduleKey, module]) => (
                 <li
-                    key={moduleUrl}
-                    onDragStart={(event) => onDragStart(event, moduleUrl)}
+                    key={moduleKey}
+                    onDragStart={(event) => onDragStart(event, moduleKey)}
                     draggable
                 >
                     {module.name}

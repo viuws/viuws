@@ -32,7 +32,9 @@ export interface ModuleConfig {
     env?: {
         [k: string]: unknown;
     };
-    args?: string[];
+    args?: {
+        [k: string]: unknown;
+    };
 }
 export interface Environment {
     name: string;

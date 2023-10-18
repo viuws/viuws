@@ -12,34 +12,35 @@ export interface Module {
     name: string;
     description: string;
     container: OCIRuntimeConfig;
-    inputs?: {
-        [k: string]: InputSpec;
-    };
-    outputs?: {
-        [k: string]: OutputSpec;
-    };
+    inputChannels?: InputChannel[];
+    outputChannels?: OutputChannel[];
     envSchema?: unknown;
     envUISchema?: unknown;
     argsSchema?: unknown;
     argsUISchema?: unknown;
+    iconUrl?: string | null;
 }
 export interface OCIRuntimeConfig {
     image: string;
     tag?: string;
     cwd?: string | null;
-    env?: {
-        [k: string]: unknown;
-    };
-    args: string[];
+    env?: EnvVarValueMapping[];
+    args?: string[];
 }
-export interface InputSpec {
+export interface EnvVarValueMapping {
+    envVar: string;
+    value: unknown;
+}
+export interface InputChannel {
+    id: string;
     name: string;
     description: string;
     cardinality?: IOCardinality & string;
     required?: boolean;
     supportedFilePatterns?: string[] | null;
 }
-export interface OutputSpec {
+export interface OutputChannel {
+    id: string;
     name: string;
     description: string;
     cardinality?: IOCardinality & string;

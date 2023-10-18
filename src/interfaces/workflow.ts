@@ -8,38 +8,34 @@
 export interface Workflow {
     schemaVersion?: string;
     name: string;
-    tasks?: {
-        [k: string]: Task;
-    };
-    environments?: {
-        [k: string]: Environment;
-    };
+    tasks?: Task[];
+    environments?: Environment[];
 }
 export interface Task {
+    id: string;
+    name: string;
+    module: string;
+    moduleConfig: ModuleConfig;
     moduleRepo?: string | null;
     moduleRev?: string | null;
-    modulePath: string;
-    moduleConfig: ModuleConfig;
     environment?: string | null;
 }
 export interface ModuleConfig {
-    inputs?: {
-        [k: string]: string;
-    };
-    outputs?: {
-        [k: string]: string;
-    };
-    env?: {
-        [k: string]: unknown;
-    };
-    args?: {
-        [k: string]: unknown;
-    };
+    inputs?: ChannelResourceMapping[];
+    outputs?: ChannelResourceMapping[];
+    env?: EnvVarValueMapping[];
+    args?: string[];
+}
+export interface ChannelResourceMapping {
+    channel: string;
+    resource: string;
+}
+export interface EnvVarValueMapping {
+    envVar: string;
+    value: unknown;
 }
 export interface Environment {
+    id: string;
     name: string;
     baseDir: string;
-    dataMappings?: {
-        [k: string]: string;
-    };
 }

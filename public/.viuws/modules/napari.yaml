@@ -7,8 +7,44 @@ inputChannels:
       required: true
 outputChannels:
     - name: images
-envSchema: {}
-envUISchema: {}
-argsSchema: {}
-argsUISchema: {}
+envSchema:
+    {
+        "type": "object",
+        "properties":
+            {
+                "my_environment_variable":
+                    {
+                        "type": "string",
+                        "description": "My environment variable value",
+                    },
+            },
+        "required": ["environment_variable"],
+    }
+envUISchema:
+    {
+        "type": "VerticalLayout",
+        "elements":
+            [
+                {
+                    "type": "Control",
+                    "scope": "#/properties/my_environment_variable",
+                },
+            ],
+    }
+argsSchema:
+    {
+        "type": "object",
+        "properties":
+            {
+                "my_argument":
+                    { "type": "string", "description": "My argument value" },
+            },
+        "required": ["my_argument"],
+    }
+argsUISchema:
+    {
+        "type": "VerticalLayout",
+        "elements":
+            [{ "type": "Control", "scope": "#/properties/my_argument" }],
+    }
 iconUrl: https://cdn.jsdelivr.net/gh/napari/napari/napari/resources/logo.png

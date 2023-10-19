@@ -22,12 +22,12 @@ export default function App() {
 
     const handlePluginEvent = useCallback(
         (event: Event) => {
-            if (document.currentScript !== null) {
-                const m = /^viuws:plugin-(?<repo>[^#]+)#(?<pluginId>.+)$/.exec(
+            if (document.currentScript) {
+                const m = /^viuws:plugin:(?<repo>[^#]+)#(?<pluginId>.+)$/.exec(
                     document.currentScript.id,
                 );
-                if (m !== null && m.groups !== undefined) {
-                    const { repo, pluginId } = m.groups;
+                if (m) {
+                    const { repo, pluginId } = m.groups!;
                     try {
                         const plugin = (event as CustomEvent).detail as Plugin;
                         registerPlugin(repo, pluginId, plugin);
@@ -94,7 +94,7 @@ export default function App() {
         ) {
             const pluginUrl = getFetchableUrl(repo, pluginPath);
             const pluginScriptElement = createScriptElement(pluginUrl);
-            pluginScriptElement.id = `viuws:plugin-${repo}#${pluginId}`;
+            pluginScriptElement.id = `viuws:plugin:${repo}#${pluginId}`;
             document.body.appendChild(pluginScriptElement);
             pluginScriptElements.push(pluginScriptElement);
         }
@@ -151,5 +151,6 @@ export default function App() {
             </div>
         );
     }
+
     return <Editor />;
 }

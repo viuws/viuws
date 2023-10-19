@@ -10,12 +10,12 @@ export default function getJsDelivrUrl(
         ghRepo = ghRepo.slice(0, -4);
     }
     let url: string;
-    if (rev !== undefined) {
+    if (rev) {
         url = `https://cdn.jsdelivr.net/gh/${ghUser}/${ghRepo}@${rev}/`;
     } else {
         url = `https://cdn.jsdelivr.net/gh/${ghUser}/${ghRepo}/`;
     }
-    if (path !== undefined) {
+    if (path) {
         url += path;
     }
     return url;

@@ -6,20 +6,20 @@ export default function getFetchableUrl(
     path?: string,
     rev?: string,
 ) {
-    if (repo !== undefined && isGitHubUrl(repo)) {
+    if (repo && isGitHubUrl(repo)) {
         return getJsDelivrUrl(repo, path, rev);
     }
-    if (rev !== undefined) {
+    if (rev) {
         console.warn("rev is ignored because repo is not a GitHub URL");
     }
     let url = "./";
-    if (repo !== undefined) {
+    if (repo) {
         url = repo;
         if (!url.endsWith("/")) {
             url += "/";
         }
     }
-    if (path !== undefined) {
+    if (path) {
         url += path;
     }
     return url;

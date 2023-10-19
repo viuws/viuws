@@ -5,9 +5,9 @@ export default function ModulePanel() {
 
     const onDragStart = (
         event: React.DragEvent<HTMLLIElement>,
-        moduleUrl: string,
+        moduleKey: string,
     ) => {
-        event.dataTransfer.setData("viuws/module", moduleUrl);
+        event.dataTransfer.setData("viuws/module", moduleKey);
         event.dataTransfer.effectAllowed = "move";
     };
 

@@ -13,10 +13,10 @@ export interface Workflow {
 }
 export interface Task {
     id: string;
+    repo?: string | null;
+    rev?: string | null;
     module: string;
     moduleConfig: ModuleConfig;
-    moduleRepo?: string | null;
-    moduleRev?: string | null;
     environment?: string | null;
 }
 export interface ModuleConfig {

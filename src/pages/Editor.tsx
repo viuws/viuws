@@ -4,7 +4,6 @@ import ReactFlow, {
     Background,
     Controls,
     MiniMap,
-    Node,
     Panel,
     ReactFlowInstance,
 } from "reactflow";
@@ -12,7 +11,7 @@ import "reactflow/dist/style.css";
 
 import ModulePanel from "../components/ModulePanel";
 import Navbar from "../components/Navbar";
-import TaskNode from "../components/TaskNode";
+import TaskNode, { TaskNodeData } from "../components/TaskNode";
 import useWorkflowStore from "../stores/workflow";
 import "./Editor.css";
 
@@ -44,8 +43,8 @@ export default function Editor() {
 
     const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
-        const moduleUrl = event.dataTransfer.getData("viuws/module");
-        if (moduleUrl) {
+        const moduleKey = event.dataTransfer.getData("viuws/module");
+        if (moduleKey) {
             event.dataTransfer.dropEffect = "move";
         }
     }, []);
@@ -53,24 +52,40 @@ export default function Editor() {
     const onDrop = useCallback(
         (event: React.DragEvent<HTMLDivElement>) => {
             event.preventDefault();
-            const moduleUrl = event.dataTransfer.getData("viuws/module");
-            if (moduleUrl) {
+            const moduleKey = event.dataTransfer.getData("viuws/module");
+            if (moduleKey) {
+                const [repo, moduleId] = moduleKey.split("#");
+                let n = 0;
+                for (const node of workflowNodes) {
+                    if (node.id.startsWith(moduleId + "_")) {
+                        const x = parseInt(node.id.slice(moduleId.length + 1));
+                        if (!isNaN(x) && x > n) {
+                            n = x;
+                        }
+                    }
+                }
                 const reactFlowBounds =
                     reactFlowWrapper.current!.getBoundingClientRect();
                 const position = reactFlowInstance!.project({
                     x: event.clientX - reactFlowBounds.left,
                     y: event.clientY - reactFlowBounds.top,
                 });
-                const node: Node = {
-                    id: "new_node", // TODO
+                const data: TaskNodeData = {
+                    repo: repo,
+                    rev: "main", // TODO
+                    module: moduleId,
+                    envData: {},
+                    argsData: {},
+                };
+                addWorkflowNode({
+                    id: `${moduleId}_${n + 1}`,
                     type: "task",
                     position: position,
-                    data: {}, // TODO
-                };
-                addWorkflowNode(node);
+                    data: data,
+                });
             }
         },
-        [reactFlowInstance, addWorkflowNode],
+        [reactFlowInstance, workflowNodes, addWorkflowNode],
     );
 
     return (

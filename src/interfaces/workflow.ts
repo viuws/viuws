@@ -9,31 +9,19 @@ export interface Workflow {
     schemaVersion?: string;
     name: string;
     tasks?: Task[];
-    environments?: Environment[];
 }
 export interface Task {
     id: string;
     repo?: string | null;
     rev?: string | null;
     module: string;
-    moduleConfig: ModuleConfig;
-    environment?: string | null;
-}
-export interface ModuleConfig {
     inputs?: ChannelResourceMapping[];
     outputs?: ChannelResourceMapping[];
-    env?: EnvVarValueMapping[];
-    args?: string[];
+    config?: {
+        [k: string]: unknown;
+    };
 }
 export interface ChannelResourceMapping {
     channel: string;
     resource: string;
-}
-export interface EnvVarValueMapping {
-    envVar: string;
-    value: unknown;
-}
-export interface Environment {
-    id: string;
-    baseDir: string;
 }

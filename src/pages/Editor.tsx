@@ -74,8 +74,7 @@ export default function Editor() {
                     repo: repo,
                     rev: "main", // TODO
                     module: moduleId,
-                    envData: {},
-                    argsData: {},
+                    config: {},
                 };
                 addWorkflowNode({
                     id: `${moduleId}_${n + 1}`,

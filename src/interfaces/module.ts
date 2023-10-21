@@ -5,7 +5,7 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type IOCardinality = "single" | "multiple";
+export type Cardinality = "single" | "multiple";
 
 export interface Module {
     schemaVersion?: string;
@@ -14,31 +14,39 @@ export interface Module {
     container: OCIRuntimeConfig;
     inputChannels?: InputChannel[];
     outputChannels?: OutputChannel[];
-    envSchema?: unknown;
-    envUISchema?: unknown;
-    argsSchema?: unknown;
-    argsUISchema?: unknown;
+    configSchema?: {
+        [k: string]: unknown;
+    } | null;
+    configUISchema?: {
+        [k: string]: unknown;
+    } | null;
     iconUrl?: string | null;
 }
 export interface OCIRuntimeConfig {
     image: string;
     tag?: string;
     cwd?: string | null;
-    env?: EnvVarValueMapping[];
-    args?: string[];
+    env?: EnvVar[];
+    args?: Argument[];
 }
-export interface EnvVarValueMapping {
-    envVar: string;
-    value: unknown;
+export interface EnvVar {
+    name: string;
+    value?: string | null;
+    property?: string | null;
+}
+export interface Argument {
+    name: string;
+    value?: string | null;
+    property?: string | null;
 }
 export interface InputChannel {
     id: string;
-    cardinality?: IOCardinality & string;
+    cardinality?: Cardinality & string;
     required?: boolean;
     supportedFilePatterns?: string[] | null;
 }
 export interface OutputChannel {
     id: string;
-    cardinality?: IOCardinality & string;
+    cardinality?: Cardinality & string;
     generatedFilePattern?: string | null;
 }

@@ -13,8 +13,7 @@ export type TaskNodeData = {
     repo?: string;
     rev?: string;
     module: string;
-    envData: unknown;
-    argsData: unknown;
+    config: unknown;
 };
 
 export default function TaskNode(props: NodeProps) {
@@ -86,30 +85,17 @@ export default function TaskNode(props: NodeProps) {
                         onChange={undefined} // TODO
                     />
                 </div>
-                <details className="collapse collapse-arrow font-bold">
-                    <summary className="collapse-title">Environment</summary>
-                    <div className="collapse-content">
-                        <JsonForms
-                            schema={module.envSchema as JsonSchema}
-                            uischema={module.envUISchema as UISchemaElement}
-                            data={data.envData}
-                            renderers={materialRenderers}
-                            onChange={undefined} // TODO
-                        />
-                    </div>
-                </details>
-                <details className="collapse collapse-arrow font-bold">
-                    <summary className="collapse-title">Arguments</summary>
-                    <div className="collapse-content">
-                        <JsonForms
-                            schema={module.argsSchema as JsonSchema}
-                            uischema={module.argsUISchema as UISchemaElement}
-                            data={data.argsData}
-                            renderers={materialRenderers}
-                            onChange={undefined} // TODO
-                        />
-                    </div>
-                </details>
+                {module.configSchema && module.configUISchema && (
+                    <JsonForms
+                        schema={module.configSchema as unknown as JsonSchema}
+                        uischema={
+                            module.configUISchema as unknown as UISchemaElement
+                        }
+                        data={data.config}
+                        renderers={materialRenderers}
+                        onChange={undefined} // TODO
+                    />
+                )}
             </div>
             {module.inputChannels?.map((inputChannel) => (
                 <Handle

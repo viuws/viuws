@@ -1,10 +1,11 @@
 import { useCallback, useEffect } from "react";
 
 import "./App.css";
+import Splash from "./components/Splash";
 import { Module } from "./interfaces/module";
 import { Plugin } from "./interfaces/plugin";
 import { Registry } from "./interfaces/registry";
-import Editor from "./pages/Editor";
+import Home from "./pages/Home";
 import useAppStore from "./stores/app";
 import useConfigStore, { ConfigState } from "./stores/config";
 import createScriptElement from "./utils/createScriptElement";
@@ -49,18 +50,12 @@ export default function App() {
 
     useEffect(() => {
         let ignore = false;
-
-        function loadApp() {
-            fetchYaml<ConfigState>("config.yaml").then((configState) => {
-                if (!ignore) {
-                    loadConfig(configState);
-                }
-                setLoaded(true);
-            }, console.error);
-        }
-
-        loadApp();
-
+        fetchYaml<ConfigState>("config.yaml").then((configState) => {
+            if (!ignore) {
+                loadConfig(configState);
+            }
+            setLoaded(true);
+        }, console.error);
         return () => {
             ignore = true;
         };
@@ -105,32 +100,29 @@ export default function App() {
             const registryUrl = getFetchableUrl(repo, registryPath);
             fetchYaml<Registry>(registryUrl).then((registry) => {
                 if (!ignore && registry.modules) {
-                    for (const moduleRef of registry.modules) {
+                    for (const moduleRef of new Set(registry.modules)) {
                         const modulePath = `${basePath}/${moduleRef.path}`;
                         loadModule(repo, moduleRef.id, modulePath);
                     }
                 }
                 if (!ignore && registry.plugins) {
-                    for (const pluginRef of registry.plugins) {
+                    for (const pluginRef of new Set(registry.plugins)) {
                         const pluginPath = `${basePath}/${pluginRef.path}`;
                         loadPlugin(repo, pluginRef.id, pluginPath);
                     }
                 }
                 if (!ignore && registry.repos) {
-                    loadRepos(registry.repos);
+                    for (const repo of new Set(registry.repos)) {
+                        loadRepo(repo);
+                    }
                 }
             }, console.error);
         }
 
-        function loadRepos(repos: string[]) {
-            const uniqueRepos = new Set(repos);
-            for (const repo of uniqueRepos) {
+        if (loaded) {
+            for (const repo of new Set(configRepos)) {
                 loadRepo(repo);
             }
-        }
-
-        if (loaded) {
-            loadRepos(configRepos);
         }
 
         return () => {
@@ -142,15 +134,7 @@ export default function App() {
     }, [loaded, configRepos, registerModule]);
 
     if (!loaded) {
-        return (
-            <div
-                className="flex items-center justify-center"
-                style={{ width: "100vw", height: "100vh" }}
-            >
-                <p>Loading...</p>
-            </div>
-        );
+        return <Splash />;
     }
-
-    return <Editor />;
+    return <Home />;
 }

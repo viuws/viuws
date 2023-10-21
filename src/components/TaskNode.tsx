@@ -1,64 +1,98 @@
-import { JsonSchema, UISchemaElement } from "@jsonforms/core";
+import { JsonFormsCore, JsonSchema, UISchemaElement } from "@jsonforms/core";
 import { materialRenderers } from "@jsonforms/material-renderers";
 import { JsonForms } from "@jsonforms/react";
-import { useEffect, useState } from "react";
-import { Handle, NodeProps, Position } from "reactflow";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { Handle, Node, NodeProps, Position } from "reactflow";
 
 import { Module } from "../interfaces/module";
 import { Registry } from "../interfaces/registry";
+import useWorkflowStore from "../stores/workflow";
 import fetchYaml from "../utils/fetchYaml";
 import getFetchableUrl from "../utils/getFetchableUrl";
 
 export type TaskNodeData = {
     repo?: string;
-    rev?: string;
-    module: string;
-    config: unknown;
+    moduleId: string;
+    config?: unknown;
 };
 
-export default function TaskNode(props: NodeProps) {
-    const data = props.data as TaskNodeData;
+export type TaskNode = Node<TaskNodeData, "task">;
+
+export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
     const [module, setModule] = useState<Module | null>(null);
+
+    const workflowNodes = useWorkflowStore((workflow) => workflow.nodes);
+    const setWorkflowNodes = useWorkflowStore((workflow) => workflow.setNodes);
 
     useEffect(() => {
         let ignore = false;
-
-        function loadModule() {
-            const basePath = ".viuws";
-            const registryPath = `${basePath}/registry.yaml`;
-            const registryUrl = getFetchableUrl(
-                data.repo,
-                registryPath,
-                data.rev,
-            );
-            fetchYaml<Registry>(registryUrl).then((registry) => {
-                if (!ignore) {
-                    const moduleRef = registry.modules?.find(
-                        (moduleRef) => moduleRef.id === data.module,
+        const basePath = ".viuws";
+        const registryPath = `${basePath}/registry.yaml`;
+        const registryUrl = getFetchableUrl(props.data.repo, registryPath);
+        fetchYaml<Registry>(registryUrl).then((registry) => {
+            if (!ignore) {
+                const moduleRef = registry.modules?.find(
+                    (moduleRef) => moduleRef.id === props.data.moduleId,
+                );
+                if (moduleRef) {
+                    const modulePath = `${basePath}/${moduleRef.path}`;
+                    const moduleUrl = getFetchableUrl(
+                        props.data.repo,
+                        modulePath,
                     );
-                    if (moduleRef) {
-                        const modulePath = `${basePath}/${moduleRef.path}`;
-                        const moduleUrl = getFetchableUrl(
-                            data.repo,
-                            modulePath,
-                            data.rev,
-                        );
-                        fetchYaml<Module>(moduleUrl).then((module) => {
-                            if (!ignore) {
-                                setModule(module);
-                            }
-                        }, console.error);
-                    }
+                    fetchYaml<Module>(moduleUrl).then((module) => {
+                        if (!ignore) {
+                            setModule(module);
+                        }
+                    }, console.error);
                 }
-            }, console.error);
-        }
-
-        loadModule();
-
+            }
+        }, console.error);
         return () => {
             ignore = true;
         };
-    }, [data, setModule]);
+    }, [props.data, setModule]);
+
+    const onTaskIdChange = useCallback(
+        (event: ChangeEvent<HTMLInputElement>) => {
+            setWorkflowNodes(
+                workflowNodes.map((node) => {
+                    if (node.type == "task" && node.id === props.id) {
+                        const taskNode = node as TaskNode;
+                        const newTaskNode: TaskNode = {
+                            ...taskNode,
+                            id: event.target.value,
+                        };
+                        return newTaskNode;
+                    }
+                    return node;
+                }),
+            );
+        },
+        [props.id, workflowNodes, setWorkflowNodes],
+    );
+
+    const onTaskConfigChange = useCallback(
+        (state: Pick<JsonFormsCore, "data" | "errors">) => {
+            setWorkflowNodes(
+                workflowNodes.map((node: Node) => {
+                    if (node.type == "task" && node.id === props.id) {
+                        const taskNode = node as TaskNode;
+                        const newTaskNode: TaskNode = {
+                            ...taskNode,
+                            data: {
+                                ...taskNode.data,
+                                config: state.data,
+                            },
+                        };
+                        return newTaskNode;
+                    }
+                    return node;
+                }),
+            );
+        },
+        [props.id, workflowNodes, setWorkflowNodes],
+    );
 
     if (!module) {
         return (
@@ -82,18 +116,18 @@ export default function TaskNode(props: NodeProps) {
                     <input
                         className="input input-ghost font-bold ml-2"
                         value={props.id}
-                        onChange={undefined} // TODO
+                        onChange={onTaskIdChange}
                     />
                 </div>
                 {module.configSchema && module.configUISchema && (
                     <JsonForms
-                        schema={module.configSchema as unknown as JsonSchema}
+                        schema={module.configSchema as JsonSchema}
                         uischema={
                             module.configUISchema as unknown as UISchemaElement
                         }
-                        data={data.config}
+                        data={props.data.config}
                         renderers={materialRenderers}
-                        onChange={undefined} // TODO
+                        onChange={onTaskConfigChange}
                     />
                 )}
             </div>

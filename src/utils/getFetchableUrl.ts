@@ -1,4 +1,4 @@
-import getJsDelivrUrl from "./getJsDelivrUrl";
+import getContentDeliveryUrl from "./getContentDeliveryUrl";
 import isGitHubUrl from "./isGitHubUrl";
 
 export default function getFetchableUrl(
@@ -7,7 +7,7 @@ export default function getFetchableUrl(
     rev?: string,
 ) {
     if (repo && isGitHubUrl(repo)) {
-        return getJsDelivrUrl(repo, path, rev);
+        return getContentDeliveryUrl(repo, path, rev);
     }
     if (rev) {
         console.warn("rev is ignored because repo is not a GitHub URL");

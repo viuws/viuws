@@ -1,4 +1,4 @@
-export default function getJsDelivrUrl(
+export default function getContentDeliveryUrl(
     ghUrl: string,
     path?: string,
     rev?: string,

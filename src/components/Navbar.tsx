@@ -15,9 +15,6 @@ export default function Navbar() {
 
     const workflowFilename = useWorkflowStore((workflow) => workflow.filename);
     const workflowName = useWorkflowStore((workflow) => workflow.name);
-    const setWorkflowFilename = useWorkflowStore(
-        (workflow) => workflow.setFilename,
-    );
     const setWorkflowName = useWorkflowStore((workflow) => workflow.setName);
     const clearWorkflow = useWorkflowStore((workflow) => workflow.clear);
     const saveWorkflow = useWorkflowStore((workflow) => workflow.save);
@@ -38,12 +35,11 @@ export default function Navbar() {
                 const file = event.target.files[0];
                 file.text().then((text) => {
                     const workflow = loadYaml(text) as Workflow;
-                    loadWorkflow(workflow);
-                    setWorkflowFilename(file.name);
+                    loadWorkflow(workflow, file.name);
                 }, console.error);
             }
         },
-        [loadWorkflow, setWorkflowFilename],
+        [loadWorkflow],
     );
 
     const onDownloadWorkflowMenuItemClick = useCallback(() => {

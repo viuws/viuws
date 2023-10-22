@@ -11,9 +11,14 @@ import { JsonForms } from "@jsonforms/react";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { Handle, NodeProps, Position } from "reactflow";
 
+import { REGISTRY_BASE_PATH, REGISTRY_FILE_NAME } from "../constants";
 import { Module } from "../interfaces/module";
 import { Registry } from "../interfaces/registry";
-import useWorkflowStore, { TaskNode, TaskNodeData } from "../stores/workflow";
+import useWorkflowStore, {
+    TASK_NODE_TYPE,
+    TaskNode,
+    TaskNodeData,
+} from "../stores/workflow";
 import fetchYaml from "../utils/fetchYaml";
 import getFetchableUrl from "../utils/getFetchableUrl";
 
@@ -26,8 +31,7 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
 
     useEffect(() => {
         let ignore = false;
-        const basePath = ".viuws";
-        const registryPath = `${basePath}/registry.yaml`;
+        const registryPath = `${REGISTRY_BASE_PATH}/${REGISTRY_FILE_NAME}`;
         const registryUrl = getFetchableUrl(props.data.repo, registryPath);
         fetchYaml<Registry>(registryUrl).then((registry) => {
             if (!ignore) {
@@ -35,7 +39,7 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
                     (moduleRef) => moduleRef.id === props.data.moduleId,
                 );
                 if (moduleRef) {
-                    const modulePath = `${basePath}/${moduleRef.path}`;
+                    const modulePath = `${REGISTRY_BASE_PATH}/${moduleRef.path}`;
                     const moduleUrl = getFetchableUrl(
                         props.data.repo,
                         modulePath,
@@ -57,7 +61,7 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
         (event: ChangeEvent<HTMLInputElement>) => {
             setWorkflowNodes(
                 workflowNodes.map((node) => {
-                    if (node.type == "task" && node.id === props.id) {
+                    if (node.type == TASK_NODE_TYPE && node.id === props.id) {
                         const taskNode = node as TaskNode;
                         const newTaskNode: TaskNode = {
                             ...taskNode,
@@ -76,7 +80,7 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
         (state: Pick<JsonFormsCore, "data" | "errors">) => {
             setWorkflowNodes(
                 workflowNodes.map((node) => {
-                    if (node.type == "task" && node.id === props.id) {
+                    if (node.type == TASK_NODE_TYPE && node.id === props.id) {
                         const taskNode = node as TaskNode;
                         const newTaskNode: TaskNode = {
                             ...taskNode,

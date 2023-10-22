@@ -1,3 +1,4 @@
+import { MODULE_TRANSFER_FORMAT } from "../constants";
 import useAppStore from "../stores/app";
 
 export default function ModulePanel() {
@@ -7,7 +8,7 @@ export default function ModulePanel() {
         event: React.DragEvent<HTMLLIElement>,
         moduleKey: string,
     ) => {
-        event.dataTransfer.setData("viuws/module", moduleKey);
+        event.dataTransfer.setData(MODULE_TRANSFER_FORMAT, moduleKey);
         event.dataTransfer.effectAllowed = "move";
     };
 

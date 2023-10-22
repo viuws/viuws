@@ -7,7 +7,8 @@ import ReactFlow, {
     useReactFlow,
 } from "reactflow";
 
-import useWorkflowStore, { TaskNode } from "../stores/workflow";
+import { MODULE_TRANSFER_FORMAT } from "../constants";
+import useWorkflowStore, { TASK_NODE_TYPE, TaskNode } from "../stores/workflow";
 import isGitHubUrl from "../utils/isGitHubUrl";
 import Navbar from "./Navbar";
 import TaskNodeComponent from "./TaskNode";
@@ -30,9 +31,25 @@ export default function WorkflowEditor() {
         (workflow) => workflow.onConnect,
     );
 
+    const getNextTaskId = useCallback(
+        (moduleId: string) => {
+            let n = 0;
+            for (const node of workflowNodes) {
+                if (node.id.startsWith(moduleId + "_")) {
+                    const x = parseInt(node.id.slice(moduleId.length + 1));
+                    if (!isNaN(x) && x > n) {
+                        n = x;
+                    }
+                }
+            }
+            return `${moduleId}_${n + 1}`;
+        },
+        [workflowNodes],
+    );
+
     const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
-        const moduleKey = event.dataTransfer.getData("viuws/module");
+        const moduleKey = event.dataTransfer.getData(MODULE_TRANSFER_FORMAT);
         if (moduleKey) {
             event.dataTransfer.dropEffect = "move";
         }
@@ -41,18 +58,12 @@ export default function WorkflowEditor() {
     const onDrop = useCallback(
         (event: React.DragEvent<HTMLDivElement>) => {
             event.preventDefault();
-            const moduleKey = event.dataTransfer.getData("viuws/module");
+            const moduleKey = event.dataTransfer.getData(
+                MODULE_TRANSFER_FORMAT,
+            );
             if (moduleKey) {
                 const [repo, moduleId] = moduleKey.split("#");
-                let n = 0;
-                for (const node of workflowNodes) {
-                    if (node.id.startsWith(moduleId + "_")) {
-                        const x = parseInt(node.id.slice(moduleId.length + 1));
-                        if (!isNaN(x) && x > n) {
-                            n = x;
-                        }
-                    }
-                }
+
                 const reactFlowBounds =
                     reactFlowWrapper.current!.getBoundingClientRect();
                 const position = reactFlowInstance.project({
@@ -60,8 +71,8 @@ export default function WorkflowEditor() {
                     y: event.clientY - reactFlowBounds.top,
                 });
                 const taskNode: TaskNode = {
-                    id: `${moduleId}_${n + 1}`,
-                    type: "task",
+                    id: getNextTaskId(moduleId),
+                    type: TASK_NODE_TYPE,
                     position: position,
                     data: {
                         repo: repo,
@@ -75,7 +86,13 @@ export default function WorkflowEditor() {
                 setWorkflowNodes([...workflowNodes, taskNode]);
             }
         },
-        [reactFlowWrapper, reactFlowInstance, workflowNodes, setWorkflowNodes],
+        [
+            reactFlowWrapper,
+            reactFlowInstance,
+            workflowNodes,
+            getNextTaskId,
+            setWorkflowNodes,
+        ],
     );
 
     return (

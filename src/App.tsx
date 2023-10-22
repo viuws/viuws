@@ -2,6 +2,12 @@ import { useCallback, useEffect } from "react";
 
 import "./App.css";
 import Splash from "./components/Splash";
+import {
+    CONFIG_FILE_PATH,
+    PLUGIN_EVENT,
+    REGISTRY_BASE_PATH,
+    REGISTRY_FILE_NAME,
+} from "./constants";
 import { Module } from "./interfaces/module";
 import { Plugin } from "./interfaces/plugin";
 import { Registry } from "./interfaces/registry";
@@ -24,7 +30,7 @@ export default function App() {
     const handlePluginEvent = useCallback(
         (event: Event) => {
             if (document.currentScript) {
-                const m = /^viuws:plugin:(?<repo>[^#]+)#(?<pluginId>.+)$/.exec(
+                const m = /^plugin:(?<repo>[^#]+)#(?<pluginId>.+)$/.exec(
                     document.currentScript.id,
                 );
                 if (m) {
@@ -42,15 +48,15 @@ export default function App() {
     );
 
     useEffect(() => {
-        window.addEventListener("viuws:plugin", handlePluginEvent);
+        window.addEventListener(PLUGIN_EVENT, handlePluginEvent);
         return () => {
-            window.removeEventListener("viuws:plugin", handlePluginEvent);
+            window.removeEventListener(PLUGIN_EVENT, handlePluginEvent);
         };
     }, [handlePluginEvent]);
 
     useEffect(() => {
         let ignore = false;
-        fetchYaml<ConfigState>("config.yaml").then((configState) => {
+        fetchYaml<ConfigState>(CONFIG_FILE_PATH).then((configState) => {
             if (!ignore) {
                 loadConfig(configState);
             }
@@ -89,25 +95,24 @@ export default function App() {
         ) {
             const pluginUrl = getFetchableUrl(repo, pluginPath);
             const pluginScriptElement = createScriptElement(pluginUrl);
-            pluginScriptElement.id = `viuws:plugin:${repo}#${pluginId}`;
+            pluginScriptElement.id = `plugin:${repo}#${pluginId}`;
             document.body.appendChild(pluginScriptElement);
             pluginScriptElements.push(pluginScriptElement);
         }
 
         function loadRepo(repo: string) {
-            const basePath = ".viuws";
-            const registryPath = `${basePath}/registry.yaml`;
+            const registryPath = `${REGISTRY_BASE_PATH}/${REGISTRY_FILE_NAME}`;
             const registryUrl = getFetchableUrl(repo, registryPath);
             fetchYaml<Registry>(registryUrl).then((registry) => {
                 if (!ignore && registry.modules) {
                     for (const moduleRef of new Set(registry.modules)) {
-                        const modulePath = `${basePath}/${moduleRef.path}`;
+                        const modulePath = `${REGISTRY_BASE_PATH}/${moduleRef.path}`;
                         loadModule(repo, moduleRef.id, modulePath);
                     }
                 }
                 if (!ignore && registry.plugins) {
                     for (const pluginRef of new Set(registry.plugins)) {
-                        const pluginPath = `${basePath}/${pluginRef.path}`;
+                        const pluginPath = `${REGISTRY_BASE_PATH}/${pluginRef.path}`;
                         loadPlugin(repo, pluginRef.id, pluginPath);
                     }
                 }

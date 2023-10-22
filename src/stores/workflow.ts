@@ -177,7 +177,6 @@ function createWorkflowEdges(workflow: Workflow) {
             for (const [targetTaskId, targetChannel] of targets) {
                 edges.push({
                     id: resource,
-                    label: resource,
                     source: sourceTaskId,
                     sourceHandle: sourceChannel,
                     target: targetTaskId,

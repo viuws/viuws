@@ -1,4 +1,9 @@
-import { JsonFormsCore, JsonSchema, UISchemaElement } from "@jsonforms/core";
+import {
+    JsonFormsCore,
+    JsonSchema,
+    UISchemaElement,
+    createAjv,
+} from "@jsonforms/core";
 import { materialRenderers } from "@jsonforms/material-renderers";
 import { JsonForms } from "@jsonforms/react";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
@@ -12,14 +17,16 @@ import getFetchableUrl from "../utils/getFetchableUrl";
 
 export type TaskNodeData = {
     repo?: string;
+    rev?: string;
     moduleId: string;
-    config?: unknown;
+    config: unknown;
 };
 
 export type TaskNode = Node<TaskNodeData, "task">;
 
 export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
     const [module, setModule] = useState<Module | null>(null);
+    const ajv = createAjv({ useDefaults: true });
 
     const workflowNodes = useWorkflowStore((workflow) => workflow.nodes);
     const setWorkflowNodes = useWorkflowStore((workflow) => workflow.setNodes);
@@ -104,8 +111,8 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
 
     return (
         <>
-            <div className="border-2 rounded-lg bg-gray-100">
-                <div className="mx-2 mt-2 flex justify-center">
+            <div className="border rounded bg-gray-100 p-2 space-y-2">
+                <div className="flex justify-center">
                     {module.iconUrl && (
                         <img
                             src={module.iconUrl}
@@ -120,15 +127,18 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
                     />
                 </div>
                 {module.configSchema && module.configUISchema && (
-                    <JsonForms
-                        schema={module.configSchema as JsonSchema}
-                        uischema={
-                            module.configUISchema as unknown as UISchemaElement
-                        }
-                        data={props.data.config}
-                        renderers={materialRenderers}
-                        onChange={onTaskConfigChange}
-                    />
+                    <div>
+                        <JsonForms
+                            data={props.data.config}
+                            schema={module.configSchema as JsonSchema}
+                            uischema={
+                                module.configUISchema as unknown as UISchemaElement
+                            }
+                            renderers={materialRenderers}
+                            onChange={onTaskConfigChange}
+                            ajv={ajv}
+                        />
+                    </div>
                 )}
             </div>
             {module.inputChannels?.map((inputChannel) => (

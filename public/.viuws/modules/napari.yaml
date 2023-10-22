@@ -2,23 +2,36 @@ name: napari
 description: A fast, interactive, multi-dimensional image viewer.
 container:
     image: ghcr.io/napari/napari-xpra
+    env:
+        - name: XPRA_PORT
+          value: 9876
+          property: port
+        - name: XPRA_XVFB_SCREEN
+          value: 1920x1080x24+32
+          property: screen
 inputChannels:
     - id: images
-      required: true
 outputChannels:
-    - name: images
+    - id: images
 configSchema:
     {
         "type": "object",
         "properties":
             {
-                "my_environment_variable":
+                "port":
+                    {
+                        "type": "integer",
+                        "description": "The port to use for the xpra server",
+                        "default": 9876,
+                    },
+                "screen":
                     {
                         "type": "string",
-                        "description": "My environment variable value",
+                        "description": "The xvfb screen to use for the xpra server",
+                        "default": "1920x1080x24+32",
                     },
             },
-        "required": ["environment_variable"],
+        "required": ["port", "screen"],
     }
 configUISchema:
     {
@@ -27,7 +40,13 @@ configUISchema:
             [
                 {
                     "type": "Control",
-                    "scope": "#/properties/my_environment_variable",
+                    "scope": "#/properties/port",
+                    "label": "Port",
+                },
+                {
+                    "type": "Control",
+                    "scope": "#/properties/screen",
+                    "label": "Screen",
                 },
             ],
     }

@@ -8,6 +8,7 @@ import ReactFlow, {
 } from "reactflow";
 
 import useWorkflowStore from "../stores/workflow";
+import isGitHubUrl from "../utils/isGitHubUrl";
 import Navbar from "./Navbar";
 import TaskNodeComponent, { TaskNode } from "./TaskNode";
 
@@ -65,8 +66,12 @@ export default function WorkflowEditor() {
                     data: {
                         repo: repo,
                         moduleId: moduleId,
+                        config: {},
                     },
                 };
+                if (isGitHubUrl(repo)) {
+                    taskNode.data.rev = "main"; // TODO
+                }
                 setWorkflowNodes([...workflowNodes, taskNode]);
             }
         },

@@ -5,8 +5,6 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type Cardinality = "single" | "multiple";
-
 export interface Module {
     schemaVersion?: string;
     name: string;
@@ -41,12 +39,10 @@ export interface Argument {
 }
 export interface InputChannel {
     id: string;
-    cardinality?: Cardinality & string;
     required?: boolean;
     supportedFilePatterns?: string[] | null;
 }
 export interface OutputChannel {
     id: string;
-    cardinality?: Cardinality & string;
     generatedFilePattern?: string | null;
 }

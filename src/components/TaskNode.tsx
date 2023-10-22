@@ -32,7 +32,11 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
     useEffect(() => {
         let ignore = false;
         const registryPath = `${REGISTRY_BASE_PATH}/${REGISTRY_FILE_NAME}`;
-        const registryUrl = getFetchableUrl(props.data.repo, registryPath);
+        const registryUrl = getFetchableUrl(
+            props.data.repo,
+            registryPath,
+            props.data.rev,
+        );
         fetchYaml<Registry>(registryUrl).then((registry) => {
             if (!ignore) {
                 const moduleRef = registry.modules?.find(
@@ -43,6 +47,7 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
                     const moduleUrl = getFetchableUrl(
                         props.data.repo,
                         modulePath,
+                        props.data.rev,
                     );
                     fetchYaml<Module>(moduleUrl).then((module) => {
                         if (!ignore) {

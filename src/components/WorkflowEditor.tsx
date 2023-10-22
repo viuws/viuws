@@ -9,7 +9,8 @@ import ReactFlow, {
 
 import { MODULE_TRANSFER_FORMAT } from "../constants";
 import useWorkflowStore, { TASK_NODE_TYPE, TaskNode } from "../stores/workflow";
-import isGitHubUrl from "../utils/isGitHubUrl";
+import fetchLatestGitHubRelease from "../utils/fetchLatestGitHubRelease";
+import parseGitHubUrl from "../utils/parseGitHubUrl";
 import Navbar from "./Navbar";
 import TaskNodeComponent from "./TaskNode";
 
@@ -80,10 +81,15 @@ export default function WorkflowEditor() {
                         config: {},
                     },
                 };
-                if (isGitHubUrl(repo)) {
-                    taskNode.data.rev = "main"; // TODO
+                const github = parseGitHubUrl(repo);
+                if (github) {
+                    fetchLatestGitHubRelease(github).then((tagName) => {
+                        taskNode.data.rev = tagName;
+                        setWorkflowNodes([...workflowNodes, taskNode]);
+                    }, console.error);
+                } else {
+                    setWorkflowNodes([...workflowNodes, taskNode]);
                 }
-                setWorkflowNodes([...workflowNodes, taskNode]);
             }
         },
         [

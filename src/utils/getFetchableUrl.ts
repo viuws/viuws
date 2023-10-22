@@ -1,16 +1,16 @@
 import getContentDeliveryUrl from "./getContentDeliveryUrl";
-import isGitHubUrl from "./isGitHubUrl";
+import parseGitHubUrl from "./parseGitHubUrl";
 
 export default function getFetchableUrl(
     repo?: string,
     path?: string,
     rev?: string,
 ) {
-    if (repo && isGitHubUrl(repo)) {
-        return getContentDeliveryUrl(repo, path, rev);
-    }
-    if (rev) {
-        console.warn("rev is ignored because repo is not a GitHub URL");
+    if (repo) {
+        const github = parseGitHubUrl(repo);
+        if (github) {
+            return getContentDeliveryUrl(github, path, rev);
+        }
     }
     let url = "./";
     if (repo) {

@@ -1,19 +1,16 @@
 export default function getContentDeliveryUrl(
-    ghUrl: string,
+    github: {
+        owner: string;
+        repo: string;
+    },
     path?: string,
     rev?: string,
 ) {
-    const ghUrlComponents = ghUrl.split("/");
-    const ghUser = ghUrlComponents[3];
-    let ghRepo = ghUrlComponents[4];
-    if (ghRepo.endsWith(".git")) {
-        ghRepo = ghRepo.slice(0, -4);
-    }
     let url: string;
     if (rev) {
-        url = `https://cdn.jsdelivr.net/gh/${ghUser}/${ghRepo}@${rev}/`;
+        url = `https://cdn.jsdelivr.net/gh/${github.owner}/${github.repo}@${rev}/`;
     } else {
-        url = `https://cdn.jsdelivr.net/gh/${ghUser}/${ghRepo}/`;
+        url = `https://cdn.jsdelivr.net/gh/${github.owner}/${github.repo}/`;
     }
     if (path) {
         url += path;

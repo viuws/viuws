@@ -1,3 +1,5 @@
+import { faPlay, faStop } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     JsonFormsCore,
     JsonSchema,
@@ -7,22 +9,13 @@ import {
 import { materialRenderers } from "@jsonforms/material-renderers";
 import { JsonForms } from "@jsonforms/react";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { Handle, Node, NodeProps, Position } from "reactflow";
+import { Handle, NodeProps, Position } from "reactflow";
 
 import { Module } from "../interfaces/module";
 import { Registry } from "../interfaces/registry";
-import useWorkflowStore from "../stores/workflow";
+import useWorkflowStore, { TaskNode, TaskNodeData } from "../stores/workflow";
 import fetchYaml from "../utils/fetchYaml";
 import getFetchableUrl from "../utils/getFetchableUrl";
-
-export type TaskNodeData = {
-    repo?: string;
-    rev?: string;
-    moduleId: string;
-    config: unknown;
-};
-
-export type TaskNode = Node<TaskNodeData, "task">;
 
 export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
     const [module, setModule] = useState<Module | null>(null);
@@ -82,14 +75,16 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
     const onTaskConfigChange = useCallback(
         (state: Pick<JsonFormsCore, "data" | "errors">) => {
             setWorkflowNodes(
-                workflowNodes.map((node: Node) => {
+                workflowNodes.map((node) => {
                     if (node.type == "task" && node.id === props.id) {
                         const taskNode = node as TaskNode;
                         const newTaskNode: TaskNode = {
                             ...taskNode,
                             data: {
                                 ...taskNode.data,
-                                config: state.data,
+                                config: state.data as {
+                                    [key: string]: unknown;
+                                },
                             },
                         };
                         return newTaskNode;
@@ -100,6 +95,14 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
         },
         [props.id, workflowNodes, setWorkflowNodes],
     );
+
+    const onPlayButtonClick = useCallback(() => {
+        // TODO
+    }, []);
+
+    const onStopButtonClick = useCallback(() => {
+        // TODO
+    }, []);
 
     if (!module) {
         return (
@@ -112,7 +115,7 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
     return (
         <>
             <div className="border rounded bg-gray-100 p-2 space-y-2">
-                <div className="flex justify-center">
+                <div className="space-x-2">
                     {module.iconUrl && (
                         <img
                             src={module.iconUrl}
@@ -121,10 +124,22 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
                         />
                     )}
                     <input
-                        className="input input-ghost font-bold ml-2"
+                        className="input input-ghost font-bold ml-2 w-40"
                         value={props.id}
                         onChange={onTaskIdChange}
                     />
+                    <button className="btn btn-sm">
+                        <FontAwesomeIcon
+                            icon={faPlay}
+                            onClick={onPlayButtonClick}
+                        />
+                    </button>
+                    <button className="btn btn-sm">
+                        <FontAwesomeIcon
+                            icon={faStop}
+                            onClick={onStopButtonClick}
+                        />
+                    </button>
                 </div>
                 {module.configSchema && module.configUISchema && (
                     <div>

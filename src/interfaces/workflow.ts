@@ -20,8 +20,15 @@ export interface Task {
     config?: {
         [k: string]: unknown;
     };
+    props?: NodeProperties | null;
 }
 export interface ChannelResourceMapping {
     channel: string;
     resource: string;
+}
+export interface NodeProperties {
+    posx: number;
+    posy: number;
+    width?: number | null;
+    height?: number | null;
 }

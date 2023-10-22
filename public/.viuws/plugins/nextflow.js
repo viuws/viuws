@@ -5,7 +5,7 @@ window.dispatchEvent(
         detail: {
             plugin: {
                 name: "nextflow",
-                type: "workflowExport",
+                type: "export",
                 exportMenuItem: "Nextflow",
                 exportFunction: nextflowExport,
             },

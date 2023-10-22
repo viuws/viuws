@@ -7,10 +7,10 @@ import ReactFlow, {
     useReactFlow,
 } from "reactflow";
 
-import useWorkflowStore from "../stores/workflow";
+import useWorkflowStore, { TaskNode } from "../stores/workflow";
 import isGitHubUrl from "../utils/isGitHubUrl";
 import Navbar from "./Navbar";
-import TaskNodeComponent, { TaskNode } from "./TaskNode";
+import TaskNodeComponent from "./TaskNode";
 
 export default function WorkflowEditor() {
     const nodeTypes = useMemo(() => ({ task: TaskNodeComponent }), []);

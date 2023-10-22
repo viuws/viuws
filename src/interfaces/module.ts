@@ -39,10 +39,7 @@ export interface Argument {
 }
 export interface InputChannel {
     id: string;
-    required?: boolean;
-    supportedFilePatterns?: string[] | null;
 }
 export interface OutputChannel {
     id: string;
-    generatedFilePattern?: string | null;
 }

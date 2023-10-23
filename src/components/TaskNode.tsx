@@ -1,4 +1,4 @@
-import { faPlay, faStop } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faPlay, faStop } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     JsonFormsCore,
@@ -109,6 +109,10 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
         // TODO
     }, []);
 
+    const onEditButtonClick = useCallback(() => {
+        // TODO
+    }, []);
+
     const onStopButtonClick = useCallback(() => {
         // TODO
     }, []);
@@ -137,13 +141,19 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
                         value={props.id}
                         onChange={onTaskIdChange}
                     />
-                    <button className="btn btn-sm">
+                    <button className="btn btn-sm text-green-500">
                         <FontAwesomeIcon
                             icon={faPlay}
                             onClick={onPlayButtonClick}
                         />
                     </button>
-                    <button className="btn btn-sm">
+                    <button className="btn btn-sm text-yellow-500">
+                        <FontAwesomeIcon
+                            icon={faPen}
+                            onClick={onEditButtonClick}
+                        />
+                    </button>
+                    <button className="btn btn-sm text-red-500">
                         <FontAwesomeIcon
                             icon={faStop}
                             onClick={onStopButtonClick}

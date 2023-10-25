@@ -1,4 +1,4 @@
-export function createScriptElement(scriptUrl: string) {
+export function createAsyncScriptElement(scriptUrl: string) {
     const scriptElement = document.createElement("script");
     scriptElement.type = "text/javascript";
     scriptElement.src = scriptUrl;
@@ -10,9 +10,10 @@ export function createScriptElement(scriptUrl: string) {
     return scriptElement;
 }
 
-export function createFileElement(file: Blob, filename: string) {
+export function createHiddenFileInputElement(file: Blob, filename: string) {
     const fileElement = document.createElement("a");
     fileElement.href = URL.createObjectURL(file);
     fileElement.download = filename;
+    fileElement.hidden = true;
     return fileElement;
 }

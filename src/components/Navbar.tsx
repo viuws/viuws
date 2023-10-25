@@ -6,7 +6,8 @@ import { ChangeEvent, useCallback, useRef } from "react";
 import { Workflow } from "../interfaces/workflow";
 import useAppStore from "../stores/app";
 import useWorkflowStore from "../stores/workflow";
-import { createFileElement as createHiddenFileInputElement } from "../utils/dom";
+import { createHiddenFileInputElement } from "../utils/dom";
+import { getWorkflowFilename } from "../utils/workflow";
 
 export default function Navbar() {
     const openWorkflowInput = useRef<HTMLInputElement>(null);
@@ -44,20 +45,18 @@ export default function Navbar() {
 
     const onDownloadWorkflowMenuItemClick = useCallback(() => {
         const workflow = saveWorkflow();
-        let filename = workflowFilename;
-        if (!filename) {
-            filename = `${workflow.name
-                .toLowerCase()
-                .replace(" ", "_")
-                .replace(/[^a-z0-9-_]/g, "")}.yaml`;
+        const downloadWorkflowInputElement = createHiddenFileInputElement(
+            new Blob([dumpYaml(workflow)], {
+                type: "application/yaml",
+            }),
+            workflowFilename ?? getWorkflowFilename(workflow.name),
+        );
+        try {
+            document.body.appendChild(downloadWorkflowInputElement);
+            downloadWorkflowInputElement.click();
+        } finally {
+            document.body.removeChild(downloadWorkflowInputElement);
         }
-        const file = new Blob([dumpYaml(workflow)], {
-            type: "application/yaml",
-        });
-        const inputElement = createHiddenFileInputElement(file, filename);
-        document.body.appendChild(inputElement);
-        inputElement.click();
-        document.body.removeChild(inputElement);
     }, [saveWorkflow, workflowFilename]);
 
     return (

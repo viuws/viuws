@@ -101,15 +101,15 @@ const useWorkflowStore = create<WorkflowState & WorkflowActions>()(
 );
 
 function getTask(
-    node: TaskNode,
+    taskNode: TaskNode,
     inputEdges: Edge[],
     outputEdges: Edge[],
 ): Task {
     return {
-        id: node.id,
-        repo: node.data.repo,
-        rev: node.data.rev,
-        module: node.data.moduleId,
+        id: taskNode.id,
+        repo: taskNode.data.repo,
+        rev: taskNode.data.rev,
+        module: taskNode.data.moduleId,
         inputs: inputEdges.map((edge) => ({
             channel: edge.targetHandle!,
             resource: edge.id,
@@ -118,12 +118,12 @@ function getTask(
             channel: edge.sourceHandle!,
             resource: edge.id,
         })),
-        config: node.data.config,
+        config: taskNode.data.config,
         props: {
-            posx: node.position.x,
-            posy: node.position.y,
-            width: node.width,
-            height: node.height,
+            posx: taskNode.position.x,
+            posy: taskNode.position.y,
+            width: taskNode.width,
+            height: taskNode.height,
         },
     };
 }

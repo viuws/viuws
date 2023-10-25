@@ -19,7 +19,7 @@ import useWorkflowStore, {
     TaskNode,
     TaskNodeData,
 } from "../stores/workflow";
-import { fetchYaml, getFetchableUrl } from "../utils/io";
+import { fetchYaml, getFetchableUrl } from "../utils/fetch";
 
 export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
     const [module, setModule] = useState<Module | null>(null);
@@ -30,10 +30,9 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
 
     useEffect(() => {
         let ignore = false;
-        const registryPath = `${REGISTRY_BASE_PATH}/${REGISTRY_FILE_NAME}`;
         const registryUrl = getFetchableUrl(
             props.data.repo,
-            registryPath,
+            `${REGISTRY_BASE_PATH}/${REGISTRY_FILE_NAME}`,
             props.data.rev,
         );
         fetchYaml<Registry>(registryUrl).then((registry) => {
@@ -42,10 +41,9 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
                     (moduleRef) => moduleRef.id === props.data.moduleId,
                 );
                 if (moduleRef) {
-                    const modulePath = `${REGISTRY_BASE_PATH}/${moduleRef.path}`;
                     const moduleUrl = getFetchableUrl(
                         props.data.repo,
-                        modulePath,
+                        `${REGISTRY_BASE_PATH}/${moduleRef.path}`,
                         props.data.rev,
                     );
                     fetchYaml<Module>(moduleUrl).then((module) => {
@@ -66,12 +64,10 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
             setWorkflowNodes(
                 workflowNodes.map((node) => {
                     if (node.type == TASK_NODE_TYPE && node.id === props.id) {
-                        const taskNode = node as TaskNode;
-                        const newTaskNode: TaskNode = {
-                            ...taskNode,
+                        return {
+                            ...(node as TaskNode),
                             id: event.target.value,
-                        };
-                        return newTaskNode;
+                        } as TaskNode;
                     }
                     return node;
                 }),
@@ -85,17 +81,15 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
             setWorkflowNodes(
                 workflowNodes.map((node) => {
                     if (node.type == TASK_NODE_TYPE && node.id === props.id) {
-                        const taskNode = node as TaskNode;
-                        const newTaskNode: TaskNode = {
-                            ...taskNode,
+                        return {
+                            ...(node as TaskNode),
                             data: {
-                                ...taskNode.data,
+                                ...(node as TaskNode).data,
                                 config: state.data as {
                                     [key: string]: unknown;
                                 },
                             },
-                        };
-                        return newTaskNode;
+                        } as TaskNode;
                     }
                     return node;
                 }),

@@ -10,6 +10,7 @@ import ReactFlow, {
 import { MODULE_TRANSFER_FORMAT } from "../constants";
 import useWorkflowStore, { TASK_NODE_TYPE, TaskNode } from "../stores/workflow";
 import { fetchLatestGitHubRelease, parseGitHubUrl } from "../utils/github";
+import { getNextTaskId } from "../utils/workflow";
 import Navbar from "./Navbar";
 import StatusBar from "./StatusBar";
 import TaskNodeComponent from "./TaskNode";
@@ -32,22 +33,6 @@ export default function WorkflowEditor() {
         (workflow) => workflow.onConnect,
     );
 
-    const getNextTaskId = useCallback(
-        (moduleId: string) => {
-            let n = 0;
-            for (const node of workflowNodes) {
-                if (node.id.startsWith(moduleId + "_")) {
-                    const x = parseInt(node.id.slice(moduleId.length + 1));
-                    if (!isNaN(x) && x > n) {
-                        n = x;
-                    }
-                }
-            }
-            return `${moduleId}_${n + 1}`;
-        },
-        [workflowNodes],
-    );
-
     const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
         const moduleKey = event.dataTransfer.getData(MODULE_TRANSFER_FORMAT);
@@ -64,15 +49,17 @@ export default function WorkflowEditor() {
             );
             if (moduleKey) {
                 const [repo, moduleId] = moduleKey.split("#");
-
                 const reactFlowBounds =
                     reactFlowWrapper.current!.getBoundingClientRect();
                 const position = reactFlowInstance.project({
                     x: event.clientX - reactFlowBounds.left,
                     y: event.clientY - reactFlowBounds.top,
                 });
+                const currentTaskIds = workflowNodes
+                    .filter((node) => node.type === TASK_NODE_TYPE)
+                    .map((node) => node.id);
                 const taskNode: TaskNode = {
-                    id: getNextTaskId(moduleId),
+                    id: getNextTaskId(currentTaskIds, moduleId),
                     type: TASK_NODE_TYPE,
                     position: position,
                     data: {
@@ -92,13 +79,7 @@ export default function WorkflowEditor() {
                 }
             }
         },
-        [
-            reactFlowWrapper,
-            reactFlowInstance,
-            workflowNodes,
-            getNextTaskId,
-            setWorkflowNodes,
-        ],
+        [reactFlowWrapper, reactFlowInstance, workflowNodes, setWorkflowNodes],
     );
 
     return (

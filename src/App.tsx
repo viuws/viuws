@@ -14,8 +14,8 @@ import { Registry } from "./interfaces/registry";
 import Home from "./pages/Home";
 import useAppStore from "./stores/app";
 import useConfigStore, { ConfigState } from "./stores/config";
-import { createScriptElement } from "./utils/dom";
-import { fetchYaml, getFetchableUrl } from "./utils/io";
+import { createAsyncScriptElement } from "./utils/dom";
+import { fetchYaml, getFetchableUrl } from "./utils/fetch";
 
 export default function App() {
     const loaded = useAppStore((app) => app.loaded);
@@ -58,8 +58,8 @@ export default function App() {
         fetchYaml<ConfigState>(CONFIG_FILE_PATH).then((configState) => {
             if (!ignore) {
                 loadConfig(configState);
+                setLoaded(true);
             }
-            setLoaded(true);
         }, console.error);
         return () => {
             ignore = true;
@@ -75,7 +75,10 @@ export default function App() {
             moduleId: string,
             modulePath: string,
         ) {
-            const moduleUrl = getFetchableUrl(repo, modulePath);
+            const moduleUrl = getFetchableUrl(
+                repo,
+                `${REGISTRY_BASE_PATH}/${modulePath}`,
+            );
             fetchYaml<Module>(moduleUrl).then((module) => {
                 if (!ignore) {
                     try {
@@ -92,27 +95,30 @@ export default function App() {
             pluginId: string,
             pluginPath: string,
         ) {
-            const pluginUrl = getFetchableUrl(repo, pluginPath);
-            const pluginScriptElement = createScriptElement(pluginUrl);
+            const pluginUrl = getFetchableUrl(
+                repo,
+                `${REGISTRY_BASE_PATH}/${pluginPath}`,
+            );
+            const pluginScriptElement = createAsyncScriptElement(pluginUrl);
             pluginScriptElement.id = `plugin:${repo}#${pluginId}`;
             document.body.appendChild(pluginScriptElement);
             pluginScriptElements.push(pluginScriptElement);
         }
 
         function loadRepo(repo: string) {
-            const registryPath = `${REGISTRY_BASE_PATH}/${REGISTRY_FILE_NAME}`;
-            const registryUrl = getFetchableUrl(repo, registryPath);
+            const registryUrl = getFetchableUrl(
+                repo,
+                `${REGISTRY_BASE_PATH}/${REGISTRY_FILE_NAME}`,
+            );
             fetchYaml<Registry>(registryUrl).then((registry) => {
                 if (!ignore && registry.modules) {
                     for (const moduleRef of new Set(registry.modules)) {
-                        const modulePath = `${REGISTRY_BASE_PATH}/${moduleRef.path}`;
-                        loadModule(repo, moduleRef.id, modulePath);
+                        loadModule(repo, moduleRef.id, moduleRef.path);
                     }
                 }
                 if (!ignore && registry.plugins) {
                     for (const pluginRef of new Set(registry.plugins)) {
-                        const pluginPath = `${REGISTRY_BASE_PATH}/${pluginRef.path}`;
-                        loadPlugin(repo, pluginRef.id, pluginPath);
+                        loadPlugin(repo, pluginRef.id, pluginRef.path);
                     }
                 }
                 if (!ignore && registry.repos) {

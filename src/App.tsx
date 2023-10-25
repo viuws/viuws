@@ -4,10 +4,13 @@ import "./App.css";
 import Splash from "./components/Splash";
 import {
     CONFIG_FILE_PATH,
+    MESSAGE_EVENT,
+    PING_REQUEST_INTERVAL_MS,
     PLUGIN_EVENT,
     REGISTRY_BASE_PATH,
     REGISTRY_FILE_NAME,
 } from "./constants";
+import { Message } from "./interfaces/message";
 import { Module } from "./interfaces/module";
 import { Plugin } from "./interfaces/plugin";
 import { Registry } from "./interfaces/registry";
@@ -16,26 +19,53 @@ import useAppStore from "./stores/app";
 import useConfigStore, { ConfigState } from "./stores/config";
 import { createAsyncScriptElement } from "./utils/dom";
 import { fetchYaml, getFetchableUrl } from "./utils/fetch";
+import { sendPingRequestMessage } from "./utils/messaging";
 
 export default function App() {
     const loaded = useAppStore((app) => app.loaded);
     const setLoaded = useAppStore((app) => app.setLoaded);
+    const setConnected = useAppStore((app) => app.setConnected);
+    const setConnectionError = useAppStore((app) => app.setConnectionError);
     const registerModule = useAppStore((app) => app.registerModule);
     const registerPlugin = useAppStore((app) => app.registerPlugin);
 
     const configRepos = useConfigStore((config) => config.repos);
     const loadConfig = useConfigStore((config) => config.load);
 
+    const handleMessageEvent = useCallback(
+        (event: Event) => {
+            if (event instanceof CustomEvent) {
+                const message = event.detail as Message;
+                if (message.header.target === "webpage") {
+                    switch (message.payload.type) {
+                        case "pingResponse":
+                            setConnected(message.payload.ok);
+                            setConnectionError(message.payload.error ?? null);
+                            break;
+                        default:
+                            console.error(
+                                `Unsupported message type: ${
+                                    message.payload.type ?? "undefined"
+                                }`,
+                            );
+                            break;
+                    }
+                }
+            }
+        },
+        [setConnected, setConnectionError],
+    );
+
     const handlePluginEvent = useCallback(
         (event: Event) => {
-            if (document.currentScript) {
+            if (event instanceof CustomEvent && document.currentScript) {
                 const m = /^plugin:(?<repo>[^#]+)#(?<pluginId>.+)$/.exec(
                     document.currentScript.id,
                 );
                 if (m) {
                     const { repo, pluginId } = m.groups!;
                     try {
-                        const plugin = (event as CustomEvent).detail as Plugin;
+                        const plugin = event.detail as Plugin;
                         registerPlugin(repo, pluginId, plugin);
                     } catch (error) {
                         console.error(error);
@@ -48,10 +78,12 @@ export default function App() {
 
     useEffect(() => {
         window.addEventListener(PLUGIN_EVENT, handlePluginEvent);
+        window.addEventListener(MESSAGE_EVENT, handleMessageEvent);
         return () => {
             window.removeEventListener(PLUGIN_EVENT, handlePluginEvent);
+            window.removeEventListener(MESSAGE_EVENT, handleMessageEvent);
         };
-    }, [handlePluginEvent]);
+    }, [handleMessageEvent, handlePluginEvent]);
 
     useEffect(() => {
         let ignore = false;
@@ -68,6 +100,7 @@ export default function App() {
 
     useEffect(() => {
         let ignore = false;
+        let pingRequestInterval: number | undefined;
         const pluginScriptElements: HTMLScriptElement[] = [];
 
         function loadModule(
@@ -133,12 +166,20 @@ export default function App() {
             for (const repo of new Set(configRepos)) {
                 loadRepo(repo);
             }
+            pingRequestInterval = window.setInterval(() => {
+                sendPingRequestMessage();
+                // TODO set timeout to connection error
+            }, PING_REQUEST_INTERVAL_MS);
         }
 
         return () => {
             ignore = true;
             for (const pluginScriptElement of pluginScriptElements) {
                 document.body.removeChild(pluginScriptElement);
+            }
+            if (pingRequestInterval) {
+                window.clearInterval(pingRequestInterval);
+                pingRequestInterval = undefined;
             }
         };
     }, [loaded, configRepos, registerModule]);

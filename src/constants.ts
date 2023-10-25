@@ -6,3 +6,5 @@ export const DEFAULT_TASK_NODE_POSX = 100;
 export const DEFAULT_TASK_NODE_POSY = 100;
 export const MODULE_TRANSFER_FORMAT = "viuws/module";
 export const PLUGIN_EVENT = "viuws:plugin";
+export const MESSAGE_EVENT = "viuws:message";
+export const PING_REQUEST_INTERVAL_MS = 1000;

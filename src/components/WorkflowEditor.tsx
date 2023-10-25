@@ -9,9 +9,9 @@ import ReactFlow, {
 
 import { MODULE_TRANSFER_FORMAT } from "../constants";
 import useWorkflowStore, { TASK_NODE_TYPE, TaskNode } from "../stores/workflow";
-import fetchLatestGitHubRelease from "../utils/fetchLatestGitHubRelease";
-import parseGitHubUrl from "../utils/parseGitHubUrl";
+import { fetchLatestGitHubRelease, parseGitHubUrl } from "../utils/github";
 import Navbar from "./Navbar";
+import StatusBar from "./StatusBar";
 import TaskNodeComponent from "./TaskNode";
 
 export default function WorkflowEditor() {
@@ -118,6 +118,9 @@ export default function WorkflowEditor() {
                 <Controls position="bottom-right" />
                 <Panel position="top-left">
                     <Navbar />
+                </Panel>
+                <Panel position="bottom-left">
+                    <StatusBar />
                 </Panel>
             </ReactFlow>
         </div>

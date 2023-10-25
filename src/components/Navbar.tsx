@@ -6,7 +6,7 @@ import { ChangeEvent, useCallback, useRef } from "react";
 import { Workflow } from "../interfaces/workflow";
 import useAppStore from "../stores/app";
 import useWorkflowStore from "../stores/workflow";
-import download from "../utils/download";
+import { createFileElement as createHiddenFileInputElement } from "../utils/dom";
 
 export default function Navbar() {
     const openWorkflowInput = useRef<HTMLInputElement>(null);
@@ -54,7 +54,10 @@ export default function Navbar() {
         const file = new Blob([dumpYaml(workflow)], {
             type: "application/yaml",
         });
-        download(file, filename);
+        const inputElement = createHiddenFileInputElement(file, filename);
+        document.body.appendChild(inputElement);
+        inputElement.click();
+        document.body.removeChild(inputElement);
     }, [saveWorkflow, workflowFilename]);
 
     return (

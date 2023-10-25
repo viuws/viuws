@@ -1,4 +1,4 @@
-export default function createScriptElement(scriptUrl: string) {
+export function createScriptElement(scriptUrl: string) {
     const scriptElement = document.createElement("script");
     scriptElement.type = "text/javascript";
     scriptElement.src = scriptUrl;
@@ -8,4 +8,11 @@ export default function createScriptElement(scriptUrl: string) {
         console.error(`Failed to load plugin: ${scriptUrl}`);
     });
     return scriptElement;
+}
+
+export function createFileElement(file: Blob, filename: string) {
+    const fileElement = document.createElement("a");
+    fileElement.href = URL.createObjectURL(file);
+    fileElement.download = filename;
+    return fileElement;
 }

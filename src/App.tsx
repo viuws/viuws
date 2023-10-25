@@ -14,9 +14,8 @@ import { Registry } from "./interfaces/registry";
 import Home from "./pages/Home";
 import useAppStore from "./stores/app";
 import useConfigStore, { ConfigState } from "./stores/config";
-import createScriptElement from "./utils/createScriptElement";
-import fetchYaml from "./utils/fetchYaml";
-import getFetchableUrl from "./utils/getFetchableUrl";
+import { createScriptElement } from "./utils/dom";
+import { fetchYaml, getFetchableUrl } from "./utils/io";
 
 export default function App() {
     const loaded = useAppStore((app) => app.loaded);

@@ -19,8 +19,7 @@ import useWorkflowStore, {
     TaskNode,
     TaskNodeData,
 } from "../stores/workflow";
-import fetchYaml from "../utils/fetchYaml";
-import getFetchableUrl from "../utils/getFetchableUrl";
+import { fetchYaml, getFetchableUrl } from "../utils/io";
 
 export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
     const [module, setModule] = useState<Module | null>(null);

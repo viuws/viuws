@@ -1,4 +1,4 @@
-export default function getContentDeliveryUrl(
+export function getContentDeliveryUrl(
     github: {
         owner: string;
         repo: string;

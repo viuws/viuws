@@ -1,16 +1,18 @@
+import { useCallback } from "react";
+
 import { MODULE_TRANSFER_FORMAT } from "../constants";
 import useAppStore from "../stores/app";
 
 export default function ModulePanel() {
     const modules = useAppStore((app) => app.modules);
 
-    const onDragStart = (
-        event: React.DragEvent<HTMLLIElement>,
-        moduleKey: string,
-    ) => {
-        event.dataTransfer.setData(MODULE_TRANSFER_FORMAT, moduleKey);
-        event.dataTransfer.effectAllowed = "move";
-    };
+    const onDragStart = useCallback(
+        (event: React.DragEvent<HTMLLIElement>, moduleKey: string) => {
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData(MODULE_TRANSFER_FORMAT, moduleKey);
+        },
+        [],
+    );
 
     return (
         <ul>

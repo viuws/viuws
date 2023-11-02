@@ -4,7 +4,7 @@ import { Address, Message } from "../interfaces/message";
 export function sendMessage(target: Address, payload: Message["payload"]) {
     const message: Message = {
         header: {
-            id: 0, // TODO
+            id: 0, // TODO unique message ID
             source: "webpage",
             target: target,
         },
@@ -16,8 +16,4 @@ export function sendMessage(target: Address, payload: Message["payload"]) {
         }),
     );
     return message.header.id;
-}
-
-export function sendPingRequestMessage() {
-    return sendMessage("contentScript", { type: "pingRequest" });
 }

@@ -6,20 +6,19 @@ import { ChangeEvent, useCallback, useRef } from "react";
 import { Workflow } from "../interfaces/workflow";
 import useAppStore from "../stores/app";
 import useWorkflowStore from "../stores/workflow";
-import { createHiddenFileInputElement } from "../utils/dom";
-import { getWorkflowFilename } from "../utils/workflow";
+import { createHiddenDownloadElement } from "../utils/dom";
 
-export default function Navbar() {
+export default function MenuBar() {
     const openWorkflowInput = useRef<HTMLInputElement>(null);
+
     const importPlugins = useAppStore((app) => app.importPlugins);
     const exportPlugins = useAppStore((app) => app.exportPlugins);
 
-    const workflowFilename = useWorkflowStore((workflow) => workflow.filename);
     const workflowName = useWorkflowStore((workflow) => workflow.name);
     const setWorkflowName = useWorkflowStore((workflow) => workflow.setName);
-    const clearWorkflow = useWorkflowStore((workflow) => workflow.clear);
-    const saveWorkflow = useWorkflowStore((workflow) => workflow.save);
     const loadWorkflow = useWorkflowStore((workflow) => workflow.load);
+    const saveWorkflow = useWorkflowStore((workflow) => workflow.save);
+    const clearWorkflow = useWorkflowStore((workflow) => workflow.clear);
 
     const onNewWorkflowMenuItemClick = useCallback(() => {
         clearWorkflow();
@@ -31,7 +30,6 @@ export default function Navbar() {
 
     const onOpenWorkflowInputChange = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => {
-            event.preventDefault();
             if (event.target.files) {
                 const file = event.target.files[0];
                 file.text().then((text) => {
@@ -44,20 +42,18 @@ export default function Navbar() {
     );
 
     const onDownloadWorkflowMenuItemClick = useCallback(() => {
-        const workflow = saveWorkflow();
-        const downloadWorkflowInputElement = createHiddenFileInputElement(
-            new Blob([dumpYaml(workflow)], {
-                type: "application/yaml",
-            }),
-            workflowFilename ?? getWorkflowFilename(workflow.name),
+        const { workflow, filename } = saveWorkflow();
+        const downloadElement = createHiddenDownloadElement(
+            new Blob([dumpYaml(workflow)], { type: "application/yaml" }),
+            filename,
         );
         try {
-            document.body.appendChild(downloadWorkflowInputElement);
-            downloadWorkflowInputElement.click();
+            document.body.appendChild(downloadElement);
+            downloadElement.click();
         } finally {
-            document.body.removeChild(downloadWorkflowInputElement);
+            document.body.removeChild(downloadElement);
         }
-    }, [saveWorkflow, workflowFilename]);
+    }, [saveWorkflow]);
 
     return (
         <div className="navbar">
@@ -86,11 +82,11 @@ export default function Navbar() {
                                                 <li key={pluginKey}>
                                                     <a
                                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                                        onClick={(_event) => {
+                                                        onClick={(_event) =>
                                                             (
                                                                 plugin.importFunction as () => void
-                                                            )();
-                                                        }}
+                                                            )()
+                                                        }
                                                     >
                                                         {plugin.importMenuItem}
                                                     </a>
@@ -111,11 +107,11 @@ export default function Navbar() {
                                                 <li key={pluginKey}>
                                                     <a
                                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                                        onClick={(_event) => {
+                                                        onClick={(_event) =>
                                                             (
                                                                 plugin.exportFunction as () => void
-                                                            )();
-                                                        }}
+                                                            )()
+                                                        }
                                                     >
                                                         {plugin.exportMenuItem}
                                                     </a>

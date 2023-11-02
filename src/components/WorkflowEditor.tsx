@@ -8,21 +8,29 @@ import ReactFlow, {
 } from "reactflow";
 
 import { MODULE_TRANSFER_FORMAT } from "../constants";
-import useWorkflowStore, { TASK_NODE_TYPE, TaskNode } from "../stores/workflow";
-import { fetchLatestGitHubRelease, parseGitHubUrl } from "../utils/github";
-import { getNextTaskId } from "../utils/workflow";
-import Navbar from "./Navbar";
+import { RESOURCE_EDGE_TYPE } from "../model/edges/ResourceEdge";
+import { TASK_NODE_TYPE } from "../model/nodes/TaskNode";
+import useWorkflowStore from "../stores/workflow";
+import { parseModuleKey } from "../utils/stores";
+import MenuBar from "./MenuBar";
 import StatusBar from "./StatusBar";
-import TaskNodeComponent from "./TaskNode";
+import ResourceEdge from "./edges/ResourceEdge";
+import TaskNode from "./nodes/TaskNode";
 
 export default function WorkflowEditor() {
-    const nodeTypes = useMemo(() => ({ task: TaskNodeComponent }), []);
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const reactFlowInstance = useReactFlow();
+    const nodeTypes = useMemo(() => ({ [TASK_NODE_TYPE]: TaskNode }), []);
+    const edgeTypes = useMemo(
+        () => ({ [RESOURCE_EDGE_TYPE]: ResourceEdge }),
+        [],
+    );
 
     const workflowNodes = useWorkflowStore((workflow) => workflow.nodes);
     const workflowEdges = useWorkflowStore((workflow) => workflow.edges);
-    const setWorkflowNodes = useWorkflowStore((workflow) => workflow.setNodes);
+    const addWorkflowTaskNodeAsync = useWorkflowStore(
+        (workflow) => workflow.addTaskNodeAsync,
+    );
     const onWorkflowNodesChange = useWorkflowStore(
         (workflow) => workflow.onNodesChange,
     );
@@ -34,58 +42,44 @@ export default function WorkflowEditor() {
     );
 
     const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        const moduleKey = event.dataTransfer.getData(MODULE_TRANSFER_FORMAT);
-        if (moduleKey) {
+        if (event.dataTransfer.types.includes(MODULE_TRANSFER_FORMAT)) {
+            event.preventDefault(); // prevent default to allow drop
             event.dataTransfer.dropEffect = "move";
         }
     }, []);
 
     const onDrop = useCallback(
         (event: React.DragEvent<HTMLDivElement>) => {
-            event.preventDefault();
-            const moduleKey = event.dataTransfer.getData(
-                MODULE_TRANSFER_FORMAT,
-            );
-            if (moduleKey) {
-                const [repo, moduleId] = moduleKey.split("#");
-                const reactFlowBounds =
-                    reactFlowWrapper.current!.getBoundingClientRect();
+            if (
+                reactFlowWrapper.current &&
+                event.dataTransfer.types.includes(MODULE_TRANSFER_FORMAT)
+            ) {
+                event.preventDefault();
+                const moduleKey = event.dataTransfer.getData(
+                    MODULE_TRANSFER_FORMAT,
+                );
+                const { repo, moduleId } = parseModuleKey(moduleKey);
+                const bounds = reactFlowWrapper.current.getBoundingClientRect();
                 const position = reactFlowInstance.project({
-                    x: event.clientX - reactFlowBounds.left,
-                    y: event.clientY - reactFlowBounds.top,
+                    x: event.clientX - bounds.left,
+                    y: event.clientY - bounds.top,
                 });
-                const currentTaskIds = workflowNodes
-                    .filter((node) => node.type === TASK_NODE_TYPE)
-                    .map((node) => node.id);
-                const taskNode: TaskNode = {
-                    id: getNextTaskId(currentTaskIds, moduleId),
-                    type: TASK_NODE_TYPE,
-                    position: position,
-                    data: {
-                        repo: repo,
-                        moduleId: moduleId,
-                        config: {},
-                    },
-                };
-                const github = parseGitHubUrl(repo);
-                if (github) {
-                    fetchLatestGitHubRelease(github).then((tagName) => {
-                        taskNode.data.rev = tagName;
-                        setWorkflowNodes([...workflowNodes, taskNode]);
-                    }, console.error);
-                } else {
-                    setWorkflowNodes([...workflowNodes, taskNode]);
-                }
+                addWorkflowTaskNodeAsync(
+                    repo,
+                    moduleId,
+                    position,
+                    console.error,
+                );
             }
         },
-        [reactFlowWrapper, reactFlowInstance, workflowNodes, setWorkflowNodes],
+        [reactFlowWrapper, reactFlowInstance, addWorkflowTaskNodeAsync],
     );
 
     return (
         <div id="reactFlowWrapper" ref={reactFlowWrapper}>
             <ReactFlow
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 nodes={workflowNodes}
                 edges={workflowEdges}
                 onNodesChange={onWorkflowNodesChange}
@@ -93,12 +87,13 @@ export default function WorkflowEditor() {
                 onConnect={onWorkflowConnect}
                 onDragOver={onDragOver}
                 onDrop={onDrop}
+                deleteKeyCode="Delete"
             >
                 <Background />
                 <MiniMap position="top-right" pannable zoomable />
                 <Controls position="bottom-right" />
                 <Panel position="top-left">
-                    <Navbar />
+                    <MenuBar />
                 </Panel>
                 <Panel position="bottom-left">
                     <StatusBar />

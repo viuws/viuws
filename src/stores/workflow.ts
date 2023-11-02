@@ -4,34 +4,27 @@ import {
     OnConnect,
     OnEdgesChange,
     OnNodesChange,
+    XYPosition,
     addEdge,
     applyEdgeChanges,
     applyNodeChanges,
 } from "reactflow";
 import { create } from "zustand";
 
+import { DEFAULT_WORKFLOW_NAME } from "../constants";
+import { Workflow } from "../interfaces/workflow";
+import { RESOURCE_EDGE_TYPE, ResourceEdge } from "../model/edges/ResourceEdge";
+import { TASK_NODE_TYPE, TaskNode } from "../model/nodes/TaskNode";
+import { fetchLatestGithubRevision, parseGithubRepo } from "../utils/github";
 import {
-    DEFAULT_TASK_NODE_POSX,
-    DEFAULT_TASK_NODE_POSY,
-    DEFAULT_WORKFLOW_NAME,
-} from "../constants";
-import { Task, Workflow } from "../interfaces/workflow";
+    getNextId,
+    getWorkflowEdges,
+    getWorkflowNodes,
+    getWorkflowTasks,
+} from "../utils/model";
 
-export type TaskNodeData = {
-    repo?: string;
-    rev?: string;
-    moduleId: string;
-    config: {
-        [k: string]: unknown;
-    };
-};
-
-export const TASK_NODE_TYPE = "task";
-
-export type TaskNode = Node<TaskNodeData, typeof TASK_NODE_TYPE>;
-
-export type WorkflowState = {
-    filename?: string;
+type WorkflowState = {
+    filename: string | null;
     name: string;
     nodes: Node[];
     edges: Edge[];
@@ -39,18 +32,27 @@ export type WorkflowState = {
 
 type WorkflowActions = {
     setName: (name: string) => void;
-    setNodes: (nodes: Node[]) => void;
-    setEdges: (edges: Edge[]) => void;
+    addTaskNodeAsync: (
+        repo: string | null,
+        moduleId: string,
+        position: XYPosition,
+        onError: (error: string) => void,
+    ) => void;
+    setTaskNodeId: (taskNodeId: string, newId: string) => void;
+    setTaskNodeConfig: (
+        taskNodeId: string,
+        newConfig: { [k: string]: unknown },
+    ) => void;
     onNodesChange: OnNodesChange;
     onEdgesChange: OnEdgesChange;
     onConnect: OnConnect;
+    load: (workflow: Workflow, filename: string) => void;
+    save: () => { workflow: Workflow; filename: string };
     clear: () => void;
-    save: () => Workflow;
-    load: (workflow: Workflow, filename?: string) => void;
 };
 
 const defaultWorkflowState: WorkflowState = {
-    filename: undefined,
+    filename: null,
     name: DEFAULT_WORKFLOW_NAME,
     nodes: [],
     edges: [],
@@ -59,133 +61,129 @@ const defaultWorkflowState: WorkflowState = {
 const useWorkflowStore = create<WorkflowState & WorkflowActions>()(
     (set, get) => ({
         ...defaultWorkflowState,
-        setName: (name) => set({ name: name }),
-        setNodes: (nodes) => set({ nodes: nodes }),
-        setEdges: (edges) => set({ edges: edges }),
-        onNodesChange: (changes) =>
-            set((state) => ({ nodes: applyNodeChanges(changes, state.nodes) })),
-        onEdgesChange: (changes) =>
-            set((state) => ({ edges: applyEdgeChanges(changes, state.edges) })),
-        onConnect: (connection) =>
-            set((state) => ({ edges: addEdge(connection, state.edges) })),
-        clear: () => set({ ...defaultWorkflowState }),
-        save: () => {
-            const state = get();
-            return {
-                name: state.name,
-                tasks: state.nodes
-                    .filter((node) => node.type === TASK_NODE_TYPE)
-                    .map((node) =>
-                        getTask(
-                            node as TaskNode,
-                            state.edges.filter(
-                                (edge) => edge.target === node.id,
-                            ),
-                            state.edges.filter(
-                                (edge) => edge.source === node.id,
-                            ),
-                        ),
-                    ),
-            };
+        setName: (name) => {
+            set({ name: name });
         },
-        load: (workflow, filename?: string) => {
+        addTaskNodeAsync: (repo, moduleId, position, onError) => {
+            let revPromise = Promise.resolve(null as string | null);
+            if (repo) {
+                const github = parseGithubRepo(repo);
+                if (github) {
+                    revPromise = fetchLatestGithubRevision(github);
+                }
+            }
+            revPromise.then((rev) => {
+                set((state) => {
+                    const taskNodeId = getNextId(
+                        moduleId,
+                        state.nodes
+                            .filter((node) => node.type == TASK_NODE_TYPE)
+                            .map((node) => node.id),
+                    );
+                    const taskNode: TaskNode = {
+                        id: taskNodeId,
+                        type: TASK_NODE_TYPE,
+                        position: position,
+                        data: {
+                            repo: repo ?? undefined,
+                            rev: rev ?? undefined,
+                            moduleId: moduleId,
+                            config: {},
+                        },
+                    };
+                    return { nodes: [...state.nodes, taskNode] };
+                });
+            }, onError);
+        },
+        setTaskNodeId: (taskNodeId, newId) => {
+            set((state) => ({
+                nodes: state.nodes.map((node) => {
+                    if (
+                        node.id === taskNodeId &&
+                        node.type === TASK_NODE_TYPE
+                    ) {
+                        const taskNode: TaskNode = {
+                            ...(node as TaskNode),
+                            id: newId,
+                        };
+                        return taskNode;
+                    }
+                    return node;
+                }),
+            }));
+        },
+        setTaskNodeConfig: (taskNodeId, newConfig) => {
+            set((state) => ({
+                nodes: state.nodes.map((node) => {
+                    if (
+                        node.id === taskNodeId &&
+                        node.type === TASK_NODE_TYPE
+                    ) {
+                        const taskNode: TaskNode = {
+                            ...(node as TaskNode),
+                            data: {
+                                ...(node as TaskNode).data,
+                                config: newConfig,
+                            },
+                        };
+                        return taskNode;
+                    }
+                    return node;
+                }),
+            }));
+        },
+        onNodesChange: (changes) => {
+            set((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
+        },
+        onEdgesChange: (changes) => {
+            set((state) => ({ edges: applyEdgeChanges(changes, state.edges) }));
+        },
+        onConnect: (connection) => {
+            set((state) => {
+                const resourceEdgeId = getNextId(
+                    connection.sourceHandle!,
+                    state.edges
+                        .filter((edge) => edge.type == RESOURCE_EDGE_TYPE)
+                        .map((edge) => edge.id),
+                );
+                const resourceEdge: ResourceEdge = {
+                    ...connection,
+                    id: resourceEdgeId,
+                    type: RESOURCE_EDGE_TYPE,
+                    data: { resource: connection.sourceHandle! },
+                } as ResourceEdge;
+                return { edges: addEdge(resourceEdge, state.edges) };
+            });
+        },
+        load: (workflow, filename) => {
             set({
                 ...defaultWorkflowState,
                 filename: filename,
                 name: workflow.name,
-                nodes: workflow.tasks?.map((task) => createTaskNode(task)),
-                edges: createWorkflowEdges(workflow),
+                nodes: getWorkflowNodes(workflow),
+                edges: getWorkflowEdges(workflow),
             });
+        },
+        save: () => {
+            const state = get();
+            const workflow: Workflow = {
+                name: state.name,
+                tasks: getWorkflowTasks(state.nodes, state.edges),
+            };
+            let filename = state.filename;
+            if (!filename) {
+                filename = `${state.name
+                    .toLowerCase()
+                    .replace(" ", "_")
+                    .replace(/[^a-z0-9-_]/g, "")}.yaml`;
+                set({ filename: filename });
+            }
+            return { workflow, filename };
+        },
+        clear: () => {
+            set(defaultWorkflowState);
         },
     }),
 );
-
-function getTask(
-    taskNode: TaskNode,
-    inputEdges: Edge[],
-    outputEdges: Edge[],
-): Task {
-    return {
-        id: taskNode.id,
-        repo: taskNode.data.repo,
-        rev: taskNode.data.rev,
-        module: taskNode.data.moduleId,
-        inputs: inputEdges.map((edge) => ({
-            channel: edge.targetHandle!,
-            resource: edge.id,
-        })),
-        outputs: outputEdges.map((edge) => ({
-            channel: edge.sourceHandle!,
-            resource: edge.id,
-        })),
-        config: taskNode.data.config,
-        props: {
-            posx: taskNode.position.x,
-            posy: taskNode.position.y,
-            width: taskNode.width,
-            height: taskNode.height,
-        },
-    };
-}
-
-function createTaskNode(task: Task): TaskNode {
-    return {
-        id: task.id,
-        type: TASK_NODE_TYPE,
-        position: {
-            x: task.props?.posx ?? DEFAULT_TASK_NODE_POSX,
-            y: task.props?.posy ?? DEFAULT_TASK_NODE_POSY,
-        },
-        width: task.props?.width,
-        height: task.props?.height,
-        data: {
-            repo: task.repo ?? undefined,
-            rev: task.rev ?? undefined,
-            moduleId: task.module,
-            config: task.config as { [k: string]: unknown },
-        },
-    };
-}
-
-function createWorkflowEdges(workflow: Workflow) {
-    const resources = new Set<string>();
-    const resourceSources = new Map<string, [string, string][]>();
-    const resourceTargets = new Map<string, [string, string][]>();
-    for (const task of workflow.tasks ?? []) {
-        for (const output of task.outputs ?? []) {
-            resources.add(output.resource);
-            if (!resourceSources.has(output.resource)) {
-                resourceSources.set(output.resource, []);
-            }
-            resourceSources
-                .get(output.resource)!
-                .push([task.id, output.channel]);
-        }
-        for (const input of task.inputs ?? []) {
-            resources.add(input.resource);
-            if (!resourceTargets.has(input.resource)) {
-                resourceTargets.set(input.resource, []);
-            }
-            resourceTargets.get(input.resource)!.push([task.id, input.channel]);
-        }
-    }
-    const edges: Edge[] = [];
-    for (const resource of resources) {
-        const sources = resourceSources.get(resource) ?? [];
-        const targets = resourceTargets.get(resource) ?? [];
-        for (const [sourceTaskId, sourceChannel] of sources) {
-            for (const [targetTaskId, targetChannel] of targets) {
-                edges.push({
-                    id: resource,
-                    source: sourceTaskId,
-                    sourceHandle: sourceChannel,
-                    target: targetTaskId,
-                    targetHandle: targetChannel,
-                });
-            }
-        }
-    }
-    return edges;
-}
 
 export default useWorkflowStore;

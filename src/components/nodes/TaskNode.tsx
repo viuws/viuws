@@ -8,106 +8,92 @@ import {
 } from "@jsonforms/core";
 import { materialRenderers } from "@jsonforms/material-renderers";
 import { JsonForms } from "@jsonforms/react";
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Handle, NodeProps, Position } from "reactflow";
 
-import { REGISTRY_BASE_PATH, REGISTRY_FILE_NAME } from "../constants";
-import { Module } from "../interfaces/module";
-import { Registry } from "../interfaces/registry";
-import useWorkflowStore, {
-    TASK_NODE_TYPE,
-    TaskNode,
-    TaskNodeData,
-} from "../stores/workflow";
-import { fetchYaml, getFetchableUrl } from "../utils/fetch";
+import { REGISTRY_PATH } from "../../constants";
+import { Module } from "../../interfaces/module";
+import { TaskNodeData } from "../../model/nodes/TaskNode";
+import useConfigStore from "../../stores/config";
+import useWorkflowStore from "../../stores/workflow";
+import { fetchModule, fetchRegistry } from "../../utils/fetch";
 
-export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
+export default function TaskNode(props: NodeProps<TaskNodeData>) {
+    const ajv = useMemo(() => createAjv({ useDefaults: true }), []);
     const [module, setModule] = useState<Module | null>(null);
-    const ajv = createAjv({ useDefaults: true });
 
-    const workflowNodes = useWorkflowStore((workflow) => workflow.nodes);
-    const setWorkflowNodes = useWorkflowStore((workflow) => workflow.setNodes);
+    const configAsRegistry = useConfigStore((config) => config.asRegistry);
+
+    const setWorkflowTaskNodeId = useWorkflowStore(
+        (workflow) => workflow.setTaskNodeId,
+    );
+    const setWorkflowTaskNodeConfig = useWorkflowStore(
+        (workflow) => workflow.setTaskNodeConfig,
+    );
 
     useEffect(() => {
         let ignore = false;
-        const registryUrl = getFetchableUrl(
-            props.data.repo,
-            `${REGISTRY_BASE_PATH}/${REGISTRY_FILE_NAME}`,
-            props.data.rev,
-        );
-        fetchYaml<Registry>(registryUrl).then((registry) => {
+        let registryPromise;
+        if (props.data.repo) {
+            registryPromise = fetchRegistry(
+                REGISTRY_PATH,
+                props.data.repo,
+                props.data.rev,
+            );
+        } else {
+            registryPromise = Promise.resolve(configAsRegistry());
+        }
+        registryPromise.then((registry) => {
             if (!ignore) {
                 const moduleRef = registry.modules?.find(
                     (moduleRef) => moduleRef.id === props.data.moduleId,
                 );
                 if (moduleRef) {
-                    const moduleUrl = getFetchableUrl(
+                    fetchModule(
+                        moduleRef.path,
                         props.data.repo,
-                        `${REGISTRY_BASE_PATH}/${moduleRef.path}`,
                         props.data.rev,
-                    );
-                    fetchYaml<Module>(moduleUrl).then((module) => {
+                    ).then((module) => {
                         if (!ignore) {
                             setModule(module);
                         }
                     }, console.error);
+                } else {
+                    console.error(`Module ${props.data.moduleId} not found`);
                 }
             }
         }, console.error);
         return () => {
             ignore = true;
         };
-    }, [props.data, setModule]);
+    }, [props.data, configAsRegistry, setModule]);
 
     const onTaskIdChange = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => {
-            setWorkflowNodes(
-                workflowNodes.map((node) => {
-                    if (node.type == TASK_NODE_TYPE && node.id === props.id) {
-                        return {
-                            ...(node as TaskNode),
-                            id: event.target.value,
-                        } as TaskNode;
-                    }
-                    return node;
-                }),
-            );
+            const id = event.target.value;
+            setWorkflowTaskNodeId(props.id, id);
         },
-        [props.id, workflowNodes, setWorkflowNodes],
+        [setWorkflowTaskNodeId, props.id],
     );
 
     const onTaskConfigChange = useCallback(
-        (state: Pick<JsonFormsCore, "data" | "errors">) => {
-            setWorkflowNodes(
-                workflowNodes.map((node) => {
-                    if (node.type == TASK_NODE_TYPE && node.id === props.id) {
-                        return {
-                            ...(node as TaskNode),
-                            data: {
-                                ...(node as TaskNode).data,
-                                config: state.data as {
-                                    [key: string]: unknown;
-                                },
-                            },
-                        } as TaskNode;
-                    }
-                    return node;
-                }),
-            );
+        ({ data }: Pick<JsonFormsCore, "data" | "errors">) => {
+            const config = data as { [k: string]: unknown };
+            setWorkflowTaskNodeConfig(props.id, config);
         },
-        [props.id, workflowNodes, setWorkflowNodes],
+        [setWorkflowTaskNodeConfig, props.id],
     );
 
     const onPlayButtonClick = useCallback(() => {
-        // TODO
+        // TODO play button
     }, []);
 
     const onEditButtonClick = useCallback(() => {
-        // TODO
+        // TODO edit button
     }, []);
 
     const onStopButtonClick = useCallback(() => {
-        // TODO
+        // TODO stop button
     }, []);
 
     if (!module) {
@@ -170,6 +156,7 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
             </div>
             {module.inputChannels?.map((inputChannel) => (
                 <Handle
+                    key={inputChannel.id}
                     id={inputChannel.id}
                     type="target"
                     position={Position.Left}
@@ -177,6 +164,7 @@ export default function TaskNodeComponent(props: NodeProps<TaskNodeData>) {
             ))}
             {module.outputChannels?.map((outputChannel) => (
                 <Handle
+                    key={outputChannel.id}
                     id={outputChannel.id}
                     type="source"
                     position={Position.Right}

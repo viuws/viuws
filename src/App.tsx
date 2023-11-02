@@ -1,191 +1,121 @@
 import { useCallback, useEffect } from "react";
 
 import "./App.css";
-import Splash from "./components/Splash";
+import AppSplash from "./components/AppSplash";
 import {
-    CONFIG_FILE_PATH,
+    CLIENT_RECONNECT_INTERVAL,
+    CLIENT_RECONNECT_TIMEOUT,
+    CONFIG_FILE,
     MESSAGE_EVENT,
-    PING_REQUEST_INTERVAL_MS,
     PLUGIN_EVENT,
-    REGISTRY_BASE_PATH,
-    REGISTRY_FILE_NAME,
 } from "./constants";
 import { Message } from "./interfaces/message";
-import { Module } from "./interfaces/module";
 import { Plugin } from "./interfaces/plugin";
-import { Registry } from "./interfaces/registry";
 import Home from "./pages/Home";
 import useAppStore from "./stores/app";
-import useConfigStore, { ConfigState } from "./stores/config";
+import useConfigStore from "./stores/config";
 import { createAsyncScriptElement } from "./utils/dom";
-import { fetchYaml, getFetchableUrl } from "./utils/fetch";
-import { sendPingRequestMessage } from "./utils/messaging";
 
 export default function App() {
-    const loaded = useAppStore((app) => app.loaded);
-    const setLoaded = useAppStore((app) => app.setLoaded);
-    const setConnected = useAppStore((app) => app.setConnected);
-    const setConnectionError = useAppStore((app) => app.setConnectionError);
-    const registerModule = useAppStore((app) => app.registerModule);
+    const initialized = useAppStore((app) => app.initialized);
+    const setInitialized = useAppStore((app) => app.setInitialized);
     const registerPlugin = useAppStore((app) => app.registerPlugin);
+    const loadRegistryAsync = useAppStore((app) => app.loadRegistryAsync);
+    const connectClient = useAppStore((app) => app.connectClient);
+    const handleMessage = useAppStore((app) => app.handleMessage);
 
-    const configRepos = useConfigStore((config) => config.repos);
     const loadConfig = useConfigStore((config) => config.load);
+    const configAsRegistry = useConfigStore((config) => config.asRegistry);
 
-    const handleMessageEvent = useCallback(
-        (event: Event) => {
-            if (event instanceof CustomEvent) {
-                const message = event.detail as Message;
-                if (message.header.target === "webpage") {
-                    switch (message.payload.type) {
-                        case "pingResponse":
-                            setConnected(message.payload.ok);
-                            setConnectionError(message.payload.error ?? null);
-                            break;
-                        default:
-                            console.error(
-                                `Unsupported message type: ${
-                                    message.payload.type ?? "undefined"
-                                }`,
-                            );
-                            break;
-                    }
-                }
-            }
-        },
-        [setConnected, setConnectionError],
-    );
+    const loadPlugin = useCallback((pluginKey: string, pluginUrl: string) => {
+        const scriptElement = createAsyncScriptElement(pluginUrl);
+        scriptElement.addEventListener("error", console.error);
+        scriptElement.id = `viuws:plugin:${pluginKey}`;
+        document.body.appendChild(scriptElement);
+    }, []);
 
-    const handlePluginEvent = useCallback(
+    const onPluginLoaded = useCallback(
         (event: Event) => {
             if (event instanceof CustomEvent && document.currentScript) {
-                const m = /^plugin:(?<repo>[^#]+)#(?<pluginId>.+)$/.exec(
-                    document.currentScript.id,
-                );
-                if (m) {
-                    const { repo, pluginId } = m.groups!;
-                    try {
-                        const plugin = event.detail as Plugin;
-                        registerPlugin(repo, pluginId, plugin);
-                    } catch (error) {
-                        console.error(error);
-                    }
+                const pattern = /^viuws:plugin:(?<pluginKey>.+)$/;
+                const match = pattern.exec(document.currentScript.id);
+                if (match) {
+                    const pluginKey = match.groups!.pluginKey;
+                    const plugin = event.detail as Plugin;
+                    registerPlugin(pluginKey, plugin);
                 }
             }
         },
         [registerPlugin],
     );
 
-    useEffect(() => {
-        window.addEventListener(PLUGIN_EVENT, handlePluginEvent);
-        window.addEventListener(MESSAGE_EVENT, handleMessageEvent);
-        return () => {
-            window.removeEventListener(PLUGIN_EVENT, handlePluginEvent);
-            window.removeEventListener(MESSAGE_EVENT, handleMessageEvent);
-        };
-    }, [handleMessageEvent, handlePluginEvent]);
+    const onMessageReceived = useCallback(
+        (event: Event) => {
+            if (event instanceof CustomEvent) {
+                const message = event.detail as Message;
+                handleMessage(message);
+            }
+        },
+        [handleMessage],
+    );
 
     useEffect(() => {
         let ignore = false;
-        fetchYaml<ConfigState>(CONFIG_FILE_PATH).then((configState) => {
+        let clientReconnectIntervalId: number;
+
+        async function initialize() {
+            await loadConfig(CONFIG_FILE, () => ignore);
             if (!ignore) {
-                loadConfig(configState);
-                setLoaded(true);
+                window.addEventListener(PLUGIN_EVENT, onPluginLoaded);
+                window.addEventListener(MESSAGE_EVENT, onMessageReceived);
+                connectClient(CLIENT_RECONNECT_TIMEOUT).catch(console.error);
+                clientReconnectIntervalId = window.setInterval(() => {
+                    connectClient(CLIENT_RECONNECT_TIMEOUT).catch(
+                        console.error,
+                    );
+                }, CLIENT_RECONNECT_INTERVAL);
+                setInitialized(true);
             }
-        }, console.error);
+        }
+
+        initialize().catch(console.error);
+
         return () => {
             ignore = true;
+            window.removeEventListener(PLUGIN_EVENT, onPluginLoaded);
+            window.removeEventListener(MESSAGE_EVENT, onMessageReceived);
+            if (clientReconnectIntervalId) {
+                window.clearInterval(clientReconnectIntervalId);
+            }
         };
-    }, [loadConfig, setLoaded]);
+    }, [
+        loadConfig,
+        onPluginLoaded,
+        onMessageReceived,
+        connectClient,
+        setInitialized,
+    ]);
 
     useEffect(() => {
         let ignore = false;
-        let pingRequestInterval: number | undefined;
-        const pluginScriptElements: HTMLScriptElement[] = [];
 
-        function loadModule(
-            repo: string,
-            moduleId: string,
-            modulePath: string,
-        ) {
-            const moduleUrl = getFetchableUrl(
-                repo,
-                `${REGISTRY_BASE_PATH}/${modulePath}`,
+        if (initialized) {
+            loadRegistryAsync(
+                null,
+                configAsRegistry(),
+                loadPlugin,
+                () => ignore,
+                console.error,
             );
-            fetchYaml<Module>(moduleUrl).then((module) => {
-                if (!ignore) {
-                    try {
-                        registerModule(repo, moduleId, module);
-                    } catch (error) {
-                        console.error(error);
-                    }
-                }
-            }, console.error);
-        }
-
-        function loadPlugin(
-            repo: string,
-            pluginId: string,
-            pluginPath: string,
-        ) {
-            const pluginUrl = getFetchableUrl(
-                repo,
-                `${REGISTRY_BASE_PATH}/${pluginPath}`,
-            );
-            const pluginScriptElement = createAsyncScriptElement(pluginUrl);
-            pluginScriptElement.id = `plugin:${repo}#${pluginId}`;
-            document.body.appendChild(pluginScriptElement);
-            pluginScriptElements.push(pluginScriptElement);
-        }
-
-        function loadRepo(repo: string) {
-            const registryUrl = getFetchableUrl(
-                repo,
-                `${REGISTRY_BASE_PATH}/${REGISTRY_FILE_NAME}`,
-            );
-            fetchYaml<Registry>(registryUrl).then((registry) => {
-                if (!ignore && registry.modules) {
-                    for (const moduleRef of new Set(registry.modules)) {
-                        loadModule(repo, moduleRef.id, moduleRef.path);
-                    }
-                }
-                if (!ignore && registry.plugins) {
-                    for (const pluginRef of new Set(registry.plugins)) {
-                        loadPlugin(repo, pluginRef.id, pluginRef.path);
-                    }
-                }
-                if (!ignore && registry.repos) {
-                    for (const repo of new Set(registry.repos)) {
-                        loadRepo(repo);
-                    }
-                }
-            }, console.error);
-        }
-
-        if (loaded) {
-            for (const repo of new Set(configRepos)) {
-                loadRepo(repo);
-            }
-            pingRequestInterval = window.setInterval(() => {
-                sendPingRequestMessage();
-                // TODO set timeout to connection error
-            }, PING_REQUEST_INTERVAL_MS);
         }
 
         return () => {
             ignore = true;
-            for (const pluginScriptElement of pluginScriptElements) {
-                document.body.removeChild(pluginScriptElement);
-            }
-            if (pingRequestInterval) {
-                window.clearInterval(pingRequestInterval);
-                pingRequestInterval = undefined;
-            }
         };
-    }, [loaded, configRepos, registerModule]);
+    }, [initialized, configAsRegistry, loadRegistryAsync, loadPlugin]);
 
-    if (!loaded) {
-        return <Splash />;
+    if (!initialized) {
+        return <AppSplash />;
     }
     return <Home />;
 }

@@ -1,6 +1,0 @@
-modules:
-    - id: napari
-      path: modules/napari.yaml
-plugins:
-    - id: nextflow
-      path: plugins/nextflow.js

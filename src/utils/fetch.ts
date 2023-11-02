@@ -1,26 +1,23 @@
 import { load as loadYaml } from "js-yaml";
 
-import { getContentDeliveryUrl } from "./cdn";
-import { parseGitHubUrl } from "./github";
+import { BASE_PATH } from "../constants";
+import { Module } from "../interfaces/module";
+import { Registry } from "../interfaces/registry";
+import { getGithubUrl, parseGithubRepo } from "./github";
 
-export function getFetchableUrl(repo?: string, path?: string, rev?: string) {
+export function getFetchableUrl(
+    path: string,
+    repo?: string | null,
+    rev?: string | null,
+) {
     if (repo) {
-        const github = parseGitHubUrl(repo);
+        const github = parseGithubRepo(repo);
         if (github) {
-            return getContentDeliveryUrl(github, path, rev);
+            return getGithubUrl(github, `${BASE_PATH}/${path}`, rev);
         }
+        return `${repo}/${BASE_PATH}/${path}`;
     }
-    let url = "./";
-    if (repo) {
-        url = repo;
-        if (!url.endsWith("/")) {
-            url += "/";
-        }
-    }
-    if (path) {
-        url += path;
-    }
-    return url;
+    return `./${path}`;
 }
 
 export async function fetchYaml<T>(url: string) {
@@ -31,4 +28,22 @@ export async function fetchYaml<T>(url: string) {
     } else {
         return Promise.reject(response.statusText);
     }
+}
+
+export async function fetchRegistry(
+    registryPath: string,
+    repo?: string | null,
+    rev?: string | null,
+) {
+    const registryUrl = getFetchableUrl(registryPath, repo, rev);
+    return await fetchYaml<Registry>(registryUrl);
+}
+
+export async function fetchModule(
+    modulePath: string,
+    repo?: string | null,
+    rev?: string | null,
+) {
+    const moduleUrl = getFetchableUrl(modulePath, repo, rev);
+    return await fetchYaml<Module>(moduleUrl);
 }

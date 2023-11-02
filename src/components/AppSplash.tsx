@@ -1,4 +1,4 @@
-export default function Splash() {
+export default function AppSplash() {
     return (
         <div
             className="flex items-center justify-center"

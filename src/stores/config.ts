@@ -1,21 +1,37 @@
 import { create } from "zustand";
 
-export type ConfigState = {
-    repos: string[];
-};
+import { Registry } from "../interfaces/registry";
+import { fetchYaml } from "../utils/fetch";
+
+type ConfigState = Registry;
 
 type ConfigActions = {
-    load: (configState: ConfigState) => void;
+    load: (file: string, checkIgnore: () => boolean) => Promise<void>;
+    asRegistry: () => Registry;
 };
 
 const defaultConfigState: ConfigState = {
+    modules: [],
+    plugins: [],
     repos: [],
 };
 
-const useConfigStore = create<ConfigState & ConfigActions>()((set) => ({
+const useConfigStore = create<ConfigState & ConfigActions>()((set, get) => ({
     ...defaultConfigState,
-    load: (configState: ConfigState) =>
-        set({ ...defaultConfigState, ...configState }),
+    load: async (file, checkIgnore) => {
+        const configState = await fetchYaml<ConfigState>(file);
+        if (!checkIgnore()) {
+            set({ ...defaultConfigState, ...configState });
+        }
+    },
+    asRegistry: () => {
+        const state = get();
+        return {
+            modules: state.modules,
+            plugins: state.plugins,
+            repos: state.repos,
+        };
+    },
 }));
 
 export default useConfigStore;
